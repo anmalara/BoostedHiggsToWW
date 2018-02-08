@@ -2,16 +2,16 @@
 <!DOCTYPE JobConfiguration PUBLIC "" "JobConfig.dtd"[
 <!ENTITY NEVT "100">
 
-<!ENTITY NEVT_signal				"1000000">
-<!ENTITY NEVT_DYJetsToLL_Pt-250To400		"1000000">
-<!ENTITY NEVT_ZZ				"1000000">
-<!ENTITY NEVT_ZW				"1000000">
-<!ENTITY NEVT_TT				"1000000">
+<!ENTITY NEVT_signal				"-1">
+<!ENTITY NEVT_DYJetsToLL_Pt-250To400		"-1">
+<!ENTITY NEVT_ZZ				"-1">
+<!ENTITY NEVT_ZW				"-1">
+<!ENTITY NEVT_TT				"-1">
 
-<!ENTITY OUTDIR 				"./file/outputfile/">
+<!ENTITY OUTDIR 				"./file/outputfile/all/">
 
 <!ENTITY MC_HZJ_HToWW_ZTo2L		SYSTEM  "../Analysis/xmlfile/HZJ_HToWW_ZTo2L_M125_13TeV_powheg_pythia8.xml">
-<!ENTITY MC_DYJetsToLL_Pt-250To400 	SYSTEM  "../Analysis/xmlfile/DYJetsToLL_Pt-250To400_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_partial.xml">
+<!ENTITY MC_DYJetsToLL_Pt-250To400 	SYSTEM  "../Analysis/xmlfile/DYJetsToLL_Pt-250To400_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8.xml">
 <!ENTITY MC_ZZ 				SYSTEM  "../Analysis/xmlfile/ZZ_TuneCUETP8M1_13TeV-pythia8.xml">
 <!ENTITY MC_ZW 				SYSTEM  "../Analysis/xmlfile/WZ_TuneCUETP8M1_13TeV-pythia8.xml">
 <!ENTITY MC_TT 				SYSTEM  "../Analysis/xmlfile/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8.xml">
