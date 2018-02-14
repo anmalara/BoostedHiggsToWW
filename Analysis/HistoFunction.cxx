@@ -21,7 +21,7 @@ TCanvas* overlapHistos(std::string file_name1, std::string histo_name1, std::str
 TCanvas* overlaphistos(std::vector<TH1*> histos, TH1* histo_data, bool data = false, bool norm = false, bool full = false);
 TH1F* CutFlow(string file_name, std::vector<string> name_dir, string histo_name = "histo_cut", bool norm = false);
 
-void HistoFunction(bool quick = true, string outdir = "./") {
+void HistoFunction(bool quick = true, string outdir = "../file/outputfile/part/") {
 
 
     // string file_name_signal = "/Users/andrea/Desktop/untitledfolder/uhh2.AnalysisModuleRunner.MC.Signal.root";
@@ -29,16 +29,16 @@ void HistoFunction(bool quick = true, string outdir = "./") {
     //string file_name_signal = "../file/outputfile/uhh2.AnalysisModuleRunner.MC.Signal.root";
     //string file_name_bkg = "../file/outputfile/uhh2.AnalysisModuleRunner.MC.Backgroung.root";
     //string file_name_bkg_DY = "../file/outputfile/uhh2.AnalysisModuleRunner.MC.Backgroung.root";
-    string file_name_signal = "../file/outputfile/uhh2.AnalysisModuleRunner.MC.signal.root";
-    string file_name_bkg_DY = "../file/outputfile/uhh2.AnalysisModuleRunner.MC.bkg_DYJetsToLL_Pt-250To400.root";
-    string file_name_bkg_ZZ = "../file/outputfile/uhh2.AnalysisModuleRunner.MC.bkg_ZZ.root";
-    string file_name_bkg_ZW = "../file/outputfile/uhh2.AnalysisModuleRunner.MC.bkg_ZW.root";
-    string file_name_bkg_TT = "../file/outputfile/uhh2.AnalysisModuleRunner.MC.bkg_TT.root";
+    string file_name_signal = outdir+"uhh2.AnalysisModuleRunner.MC.signal.root";
+    string file_name_bkg_DY = outdir+"uhh2.AnalysisModuleRunner.MC.bkg_DYJetsToLL_Pt-250To400.root";
+    string file_name_bkg_ZZ = outdir+"uhh2.AnalysisModuleRunner.MC.bkg_ZZ.root";
+    string file_name_bkg_ZW = outdir+"uhh2.AnalysisModuleRunner.MC.bkg_ZW.root";
+    string file_name_bkg_TT = outdir+"uhh2.AnalysisModuleRunner.MC.bkg_TT.root";
 
     TFile *file_signal=new TFile((file_name_signal).c_str());
-    TFile *file_bkg_DY=new TFile((file_name_bkg_TT).c_str());
-    TFile *file_bkg_ZZ=new TFile((file_name_bkg_TT).c_str());
-    TFile *file_bkg_ZW=new TFile((file_name_bkg_TT).c_str());
+    TFile *file_bkg_DY=new TFile((file_name_bkg_DY).c_str());
+    TFile *file_bkg_ZZ=new TFile((file_name_bkg_ZZ).c_str());
+    TFile *file_bkg_ZW=new TFile((file_name_bkg_ZW).c_str());
     TFile *file_bkg_TT=new TFile((file_name_bkg_TT).c_str());
 
 
@@ -59,7 +59,7 @@ void HistoFunction(bool quick = true, string outdir = "./") {
             TDirectory *dir = file_signal->GetDirectory(key->GetName());
             string name = dir->GetName();
             name_dir.push_back(name);
-            gSystem->Exec(("mkdir -p ../file/outputfile/"+name).c_str());
+            gSystem->Exec(("mkdir -p "+outdir+name).c_str());
             TList *dirlist_1 = dir->GetListOfKeys();
             TIterator *iter_1 = dirlist_1->MakeIterator();
             TObject *key_1 = iter_1->Next();
@@ -76,13 +76,13 @@ void HistoFunction(bool quick = true, string outdir = "./") {
           key = iter->Next();
         }
 
-
-    TH1F* histo_cut_signal = CutFlow(file_name_signal, name_dir, "signal", true );
+    bool cut_norm = true;
+    TH1F* histo_cut_signal = CutFlow(file_name_signal, name_dir, "signal", cut_norm);
     //TH1F* histo_cut_bkg = CutFlow(file_name_bkg, name_dir, "DY", true);
-    TH1F* histo_cut_bkg_DY = CutFlow(file_name_bkg_DY, name_dir, "DY", true);
-    TH1F* histo_cut_bkg_ZZ = CutFlow(file_name_bkg_ZZ, name_dir, "ZZ", true);
-    TH1F* histo_cut_bkg_ZW = CutFlow(file_name_bkg_ZW, name_dir, "ZW", true);
-    TH1F* histo_cut_bkg_TT = CutFlow(file_name_bkg_TT, name_dir, "TT", true);
+    TH1F* histo_cut_bkg_DY = CutFlow(file_name_bkg_DY, name_dir, "DY", cut_norm);
+    TH1F* histo_cut_bkg_ZZ = CutFlow(file_name_bkg_ZZ, name_dir, "ZZ", cut_norm);
+    TH1F* histo_cut_bkg_ZW = CutFlow(file_name_bkg_ZW, name_dir, "ZW", cut_norm);
+    TH1F* histo_cut_bkg_TT = CutFlow(file_name_bkg_TT, name_dir, "TT", cut_norm);
 
     //histo_cut_signal->Scale(1./10000000);
 
@@ -94,10 +94,11 @@ void HistoFunction(bool quick = true, string outdir = "./") {
     histo_cuts.push_back(histo_cut_bkg_ZW);
     histo_cuts.push_back(histo_cut_bkg_TT);
 
-    string name = "../file/outputfile/"+outdir+"cutflow.png";
+    string name = outdir+"cutflow.png";
     //TCanvas* c_cutflow = overlap2histos(histo_cut_signal, histo_cut_bkg);
     //TCanvas* c_cutflow = overlaphistos(histo_cuts, histo_cut_signal);
     TCanvas* c_cutflow = overlaphistos(histo_cuts, histo_cut_signal);
+    //TCanvas* c_cutflow_2 = overlaphistos(histo_cuts, histo_cut_signal,false, true);
     c_cutflow->SaveAs((name).c_str());
 
 
@@ -113,7 +114,7 @@ void HistoFunction(bool quick = true, string outdir = "./") {
       histotemp=(TH1F*)file_signal->Get((name_histo[i]).c_str());
       histo2= (TH1F*)histotemp->Clone((name+" Bkg").c_str() );
       c = overlap2histos(histo1, histo2, false, true);
-      name = "../file/outputfile/"+outdir+name_histo[i]+".png";
+      name = outdir+name_histo[i]+".png";
       c->SaveAs((name).c_str());
     }
   }

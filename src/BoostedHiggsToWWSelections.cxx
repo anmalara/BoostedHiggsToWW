@@ -48,7 +48,7 @@ bool PtElecSelection::passes(const Event & event){
     skip_event = skip_event && electron.pt() > pt_electron;
     if(!skip_event) continue;
   }
-  
+
   return skip_event;
 }
 
@@ -58,9 +58,9 @@ PtMuonSelection::PtMuonSelection(float pt_muon_): pt_muon(pt_muon_){}
 
 bool PtMuonSelection::passes(const Event & event){
   assert(event.muons); // if this fails, it probably means muons are not read in
-  
+
   bool skip_event = true;
-  
+
   for(const auto & muon: *event.muons){
     skip_event = skip_event && muon.pt() > pt_muon;
     if(!skip_event) continue;
@@ -80,8 +80,7 @@ bool DiElecSelection::passes(const Event & event){
   const auto & ele2 = event.electrons->at(1);
   auto isolation_1 = ele1.relIso();
   auto isolation_2 = ele2.relIso();
-  if(isolation_1 < min_isolation || isolation_2 < min_isolation) return false;
-  return true;
+  return isolation_1 < min_isolation && isolation_2 < min_isolation;
 }
 
 ////////////////////////////////////////////////////////
@@ -95,8 +94,7 @@ bool DiMuonSelection::passes(const Event & event){
   const auto & muon2 = event.muons->at(1);
   auto isolation_1 = muon1.relIso();
   auto isolation_2 = muon2.relIso();
-  if(isolation_1 < min_isolation || isolation_2 < min_isolation) return false;
-  return true;
+  return isolation_1 < min_isolation && isolation_2 < min_isolation;
 }
 
 ////////////////////////////////////////////////////////
@@ -105,19 +103,19 @@ ZSelection::ZSelection(){}
 
 bool ZSelection::passes(const Event & event){
   assert(event.muons || event.electrons); // if this fails, it probably means muons/electrons are not read in
-  
-  if(XOR(event.muons->size()!=2, event.electrons->size()!=2)){
+
+  if(!XOR(event.muons->size()==2, event.electrons->size()==2)){
     std::cout << "\n @@@ WARNING -- ZSelection::passes -- unexpected number of muons/electrons in the event (!=2) --- check selection. returning 'false'\n";
     return false;
   }
 
   Particle lep1, lep2;
-  
+
   if (event.electrons->size()==2){
     lep1= event.electrons->at(0);
     lep2= event.electrons->at(1);
   }
-  
+
   if (event.muons->size()==2){
     lep1= event.muons->at(0);
     lep2= event.muons->at(1);
@@ -126,74 +124,47 @@ bool ZSelection::passes(const Event & event){
   auto dilep = lep1.v4() + lep2.v4();
   if(dilep.M() < 81 || dilep.M() > 101) return false;
   return true;
-}  
+}
 
 ////////////////////////////////////////////////////////
 
-
 PhiAngularCut::PhiAngularCut (float phi_min_, float phi_max_): phi_min(phi_min_), phi_max(phi_max_){}
 bool PhiAngularCut::passes(const Event& event){
-  
+
   assert(event.topjets && (event.muons || event.electrons));
-  
-  if(XOR(event.muons->size()!=2, event.electrons->size()!=2)){
+
+  if(!XOR(event.muons->size()==2, event.electrons->size()==2)){
     std::cout << "\n @@@ WARNING -- PhiAngularCuts::passes -- unexpected number of muons/electrons in the event (!=2). returning 'false'\n";
     return false;
   }
-  
+
   if(!event.topjets->size()){
     std::cout << "\n @@@ WARNING -- PhiAngularCuts::passes -- unexpected number of topjets in the event (==0). returning 'false'\n";
     return false;
   }
 
   Particle lep1, lep2;
-  
+
   if (event.electrons->size()==2){
     lep1= event.electrons->at(0);
     lep2= event.electrons->at(1);
   }
-  
+
   if (event.muons->size()==2){
     lep1= event.muons->at(0);
     lep2= event.muons->at(1);
   }
-  
+
   auto diLep = lep1.v4() + lep2.v4();
   bool skip_jet = false;
-  
+
   for(const auto & jet: *event.topjets){
     auto Dphi = deltaPhi(diLep, jet);
     skip_jet = skip_jet || (Dphi > phi_min && Dphi< phi_max);
     if(skip_jet) continue;
   }
-    
+
   return skip_jet;
 }
+
 ////////////////////////////////////////////////////////
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

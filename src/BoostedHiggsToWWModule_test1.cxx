@@ -7,6 +7,8 @@
 #include "UHH2/common/include/CleaningModules.h"
 #include "UHH2/common/include/ElectronHists.h"
 #include "UHH2/common/include/MuonHists.h"
+#include <UHH2/common/include/MuonIds.h>
+#include <UHH2/common/include/ElectronIds.h>
 #include "UHH2/common/include/NSelections.h"
 #include "UHH2/common/include/TriggerSelection.h"
 #include "UHH2/BoostedHiggsToWW/include/BoostedHiggsToWWSelections.h"
@@ -24,17 +26,19 @@ namespace uhh2examples {
   * This is the central class which calls other AnalysisModules, Hists or Selection classes.
   * This AnalysisModule, in turn, is called (via AnalysisModuleRunner) by SFrame.
   */
-  class BoostedHiggsToWWModule: public AnalysisModule {
+  class BoostedHiggsToWWModule_test: public AnalysisModule {
   public:
 
-    explicit BoostedHiggsToWWModule(Context & ctx);
+    explicit BoostedHiggsToWWModule_test(Context & ctx);
     virtual bool process(Event & event) override;
 
   private:
 
     std::unique_ptr<CommonModules> common;
 
-    std::unique_ptr<JetCleaner> jetcleaner;
+    std::unique_ptr<JetCleaner> 	jetcleaner;
+    std::unique_ptr<MuonCleaner>	muoncleaner;
+    std::unique_ptr<ElectronCleaner>	elecleaner;
 
     // Selections
     std::unique_ptr<Selection> nJet_sel, nJet_sel_1, nEle_sel, nEle_sel_2, nMuon_sel, nMuon_sel_2;
@@ -53,7 +57,7 @@ namespace uhh2examples {
   };
 
 
-  BoostedHiggsToWWModule::BoostedHiggsToWWModule(Context & ctx){
+  BoostedHiggsToWWModule_test::BoostedHiggsToWWModule_test(Context & ctx){
     // In the constructor, the typical tasks are to initialize the
     // member variables, in particular the AnalysisModules such as
     // CommonModules or some cleaner module, Selections and Hists.
@@ -83,8 +87,10 @@ namespace uhh2examples {
       common->disable_metfilters();
     }
     common->init(ctx);
-    jetcleaner.reset(new JetCleaner(ctx, 30.0, 2.4));
 
+    jetcleaner.reset(new JetCleaner(ctx, 30.0, 2.4));
+    muoncleaner.reset(new MuonCleaner (AndId<Muon>(MuonIDMedium(), PtEtaCut(1., 4))));
+    elecleaner.reset(new ElectronCleaner (AndId<Electron>(ElectronID_Spring16_medium, PtEtaCut(1., 4))));
     // note that the JetCleaner is only kept for the sake of example;
     // instead of constructing a jetcleaner explicitly,
     // the cleaning can also be achieved with less code via CommonModules with:
@@ -138,7 +144,7 @@ namespace uhh2examples {
   }
 
 
-  bool BoostedHiggsToWWModule::process(Event & event) {
+  bool BoostedHiggsToWWModule_test::process(Event & event) {
     // This is the main procedure, called for each event. Typically,
     // do some pre-processing by calling the modules' process method
     // of the modules constructed in the constructor (1).
@@ -155,8 +161,9 @@ namespace uhh2examples {
     // 1. run all modules other modules.
     common->process(event);
     jetcleaner->process(event);
+    muoncleaner->process(event);
+    elecleaner->process(event);
 
-std::cout << "EVENT.WEIGHT "<< event.weight << std::endl;
     //const bool pass_trigger = trigger_sel->passes(event);
     //if(!pass_trigger) return false;
 
@@ -248,7 +255,7 @@ std::cout << "EVENT.WEIGHT "<< event.weight << std::endl;
   }
 
   // as we want to run the ExampleCycleNew directly with AnalysisModuleRunner,
-  // make sure the BoostedHiggsToWWModule is found by class name. This is ensured by this macro:
-  UHH2_REGISTER_ANALYSIS_MODULE(BoostedHiggsToWWModule)
+  // make sure the BoostedHiggsToWWModule_test is found by class name. This is ensured by this macro:
+  UHH2_REGISTER_ANALYSIS_MODULE(BoostedHiggsToWWModule_test)
 
 }

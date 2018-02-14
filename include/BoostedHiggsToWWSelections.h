@@ -13,7 +13,7 @@ namespace uhh2 {
   * The jets are assumed to be sorted in pt.
   */
 
-/////
+  /////
 
   class BoostedJetSelection: public Selection {
   public:
@@ -23,7 +23,7 @@ namespace uhh2 {
     float pt_min;
   };
 
-/////
+  /////
 
   class DijetSelection: public Selection {
   public:
@@ -33,7 +33,7 @@ namespace uhh2 {
     float dphi_min, third_frac_max;
   };
 
-/////
+  /////
 
   class PtElecSelection: public Selection {
   public:
@@ -43,7 +43,7 @@ namespace uhh2 {
     float pt_electron;
   };
 
-/////
+  /////
 
   class PtMuonSelection: public Selection {
   public:
@@ -53,7 +53,7 @@ namespace uhh2 {
     float pt_muon;
   };
 
-/////
+  /////
 
   class DiElecSelection: public Selection {
   public:
@@ -63,7 +63,7 @@ namespace uhh2 {
     float min_isolation;
   };
 
-/////
+  /////
 
   class DiMuonSelection: public Selection {
   public:
@@ -73,7 +73,7 @@ namespace uhh2 {
     float min_isolation;
   };
 
-/////
+  /////
 
   class ZSelection: public Selection {
   public:
@@ -81,7 +81,7 @@ namespace uhh2 {
     virtual bool passes(const Event & event) override;
   };
 
-/////
+  /////
 
   class PhiAngularCut: public Selection {
   public:
@@ -91,9 +91,5 @@ namespace uhh2 {
     float phi_min, phi_max;
   };
 
+
 }
-/////
-
-
-
-
