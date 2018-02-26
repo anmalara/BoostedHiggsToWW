@@ -37,40 +37,36 @@ namespace uhh2 {
 
   class PtElecSelection: public Selection {
   public:
-    PtElecSelection(float pt_electron = 5);
+    PtElecSelection(float pt_electron = 5, float min_isolation = 0.2);
     virtual bool passes(const Event & event) override;
   private:
-    float pt_electron;
+    float pt_electron, min_isolation;
   };
 
   /////
 
   class PtMuonSelection: public Selection {
   public:
-    PtMuonSelection(float pt_muon = 5);
+    PtMuonSelection(float pt_muon = 5, float min_isolation = 0.2);
     virtual bool passes(const Event & event) override;
   private:
-    float pt_muon;
+    float pt_muon, min_isolation;
   };
 
   /////
 
   class DiElecSelection: public Selection {
   public:
-    DiElecSelection(float min_isolation = 0.2);
+    DiElecSelection();
     virtual bool passes(const Event & event) override;
-  private:
-    float min_isolation;
   };
 
   /////
 
   class DiMuonSelection: public Selection {
   public:
-    DiMuonSelection(float min_isolation = 0.2);
+    DiMuonSelection();
     virtual bool passes(const Event & event) override;
-  private:
-    float min_isolation;
   };
 
   /////

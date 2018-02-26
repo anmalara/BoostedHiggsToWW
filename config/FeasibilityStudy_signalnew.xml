@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE JobConfiguration PUBLIC "" "JobConfig.dtd"[
-<!ENTITY NEVT "100">
+<!ENTITY NEVT_Data                      "-1">
 
 <!ENTITY NEVT_signal				            "-1">
-<!ENTITY NEVT_DYJetsToLL_Pt-250To400    "1000000">
-<!ENTITY NEVT_ZZ				                "1000000">
-<!ENTITY NEVT_ZW				                "1000000">
+<!ENTITY NEVT_DYJetsToLL_Pt-250To400		"1000000">
+<!ENTITY NEVT_ZZ				                "-1">
+<!ENTITY NEVT_ZW				                "-1">
 <!ENTITY NEVT_TT				                "-1">
 
-<!ENTITY OUTDIR 				"./file/outputfile/feasibilitystudy_signalnew/">
+<!ENTITY OUTDIR 				"./file/outputfile/feasibilitystudy/MC_signal/">
 
 <!ENTITY MC_HZ_HiggsToWWZToLL       SYSTEM  "./xmlfile/HZ_HiggsToWWZToLL_Pythia8_TuneCP5.xml">
 <!ENTITY MC_HZJ_HToWW_ZTo2L         SYSTEM  "./xmlfile/HZJ_HToWW_ZTo2L_M125_13TeV_powheg_pythia8.xml">
@@ -16,7 +16,13 @@
 <!ENTITY MC_ZZ                      SYSTEM  "./xmlfile/ZZ_TuneCUETP8M1_13TeV-pythia8.xml">
 <!ENTITY MC_ZW                      SYSTEM  "./xmlfile/WZ_TuneCUETP8M1_13TeV-pythia8.xml">
 <!ENTITY MC_TT                      SYSTEM  "./xmlfile/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8.xml">
+<!ENTITY Data_2017C                 SYSTEM  "./xmlfile/Run2017C-PromptReco-v1.xml">
 ]>
+
+<!--
+<ConfigParse NEventsBreak="0" LastBreak="0" FileSplit="10" />
+<ConfigSGE RAM ="2" DISK ="2" Mail="andrea.malara@desy.de" Notification="as" Workdir="./file/outputfile/feasibilitystudy/MC_signal"/>
+-->
 
 <!-- OutputLevel controls which messages are printed; set to VERBOSE or DEBUG for more verbosity, to WARNING or ERROR for less -->
 <JobConfiguration JobName="FeasibilityStudyJob" OutputLevel="INFO">
@@ -25,12 +31,7 @@
 
   <Cycle Name="uhh2::AnalysisModuleRunner" OutputDirectory="&OUTDIR;" PostFix="" TargetLumi="1" >
 
-    <InputData Type="MC" Version="signal" Lumi="0.752" NEventsMax="&NEVT_signal;" Cacheable="False">                                      &MC_HZ_HiggsToWWZToLL;        <InputTree Name="AnalysisTree"/> <OutputTree Name="AnalysisTree"/> </InputData>
-    <!-- <InputData Type="MC" Version="signal" Lumi="0.752" NEventsMax="&NEVT_signal;" Cacheable="False">                                      &MC_HZJ_HToWW_ZTo2L;        <InputTree Name="AnalysisTree"/> <OutputTree Name="AnalysisTree"/> </InputData> -->
-    <!-- <InputData Type="MC" Version="bkg_ZZ" Lumi="10.32" NEventsMax="&NEVT_ZZ;" Cacheable="False">                                          &MC_ZZ;                     <InputTree Name="AnalysisTree"/> <OutputTree Name="AnalysisTree"/> </InputData> -->
-    <!-- <InputData Type="MC" Version="bkg_ZW" Lumi="22.82" NEventsMax="&NEVT_ZW;" Cacheable="False">                                          &MC_ZW;                     <InputTree Name="AnalysisTree"/> <OutputTree Name="AnalysisTree"/> </InputData> -->
-    <!-- <InputData Type="MC" Version="bkg_TT" Lumi="832" NEventsMax="&NEVT_TT;" Cacheable="False">                                            &MC_TT;                     <InputTree Name="AnalysisTree"/> <OutputTree Name="AnalysisTree"/> </InputData> -->
-    <!-- <InputData Type="MC" Version="bkg_DYJetsToLL_Pt-250To400" Lumi="2.991" NEventsMax="&NEVT_DYJetsToLL_Pt-250To400;" Cacheable="False">  &MC_DYJetsToLL_Pt-250To400; <InputTree Name="AnalysisTree"/> <OutputTree Name="AnalysisTree"/> </InputData> -->
+    <InputData Type="MC" Version="signal_new" Lumi="0.00022" NEventsMax="&NEVT_signal;" Cacheable="False">                                    &MC_HZ_HiggsToWWZToLL;        <InputTree Name="AnalysisTree"/> <OutputTree Name="AnalysisTree"/> </InputData>
 
 
     <UserConfig>
@@ -40,10 +41,10 @@
       <Item Name="MuonCollection" Value="slimmedMuonsUSER" />
       <Item Name="TauCollection" Value="slimmedTaus" />
       <Item Name="JetCollection" Value="slimmedJets" />
-      <Item Name="GenJetCollection" Value="slimmedGenJets" />
       <Item Name="METName" Value="slimmedMETs" />
       <Item Name="TopJetCollection" Value="packedPatJetsAk8CHSJets_SoftDropCHS" />
       <Item Name="GenParticleCollection" Value="GenParticles" />
+      <Item Name="GenJetCollection" Value="slimmedGenJets" />
       <!-- The list of available collections to read in corresponds to the pointer members in event. The 'Name's to use here in the configuration are:
 
       PrimaryVertexCollection

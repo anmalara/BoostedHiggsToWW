@@ -21,6 +21,18 @@ private:
 
 //================================================================================
 
+class GenTopJetLeptonOverlapRemoval: public uhh2::AnalysisModule {
+public:
+   explicit GenTopJetLeptonOverlapRemoval(double deltaRmin);
+   virtual bool process(uhh2::Event & event) override;
+
+private:
+   double deltaRmin;
+};
+
+//================================================================================
+
 void sort_topjet_H(std::vector<TopJet> & jets, GenParticle H);
+void sort_gentopjet_H(std::vector<GenTopJet> & jets, GenParticle H);
 void sort_topjet(std::vector<TopJet> & jets, auto diLep);
 void sort_topjet_by_dilepdist(uhh2::Event & event);

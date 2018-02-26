@@ -15,6 +15,7 @@
 
 using namespace std;
 void xmlWriterRecursive(string name_file, string path, int first, int last, bool add);
+std::string itoa(int i);
 
 /* ************************************
 *  *           Main Program             *
@@ -25,6 +26,29 @@ void xmlfileWriter() {
   string name_file, path;
   int first, last;
   bool append;
+
+  ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  for (int i = 0; i <= 8; i++) {
+    name_file = "../config/xmlfile/SingleMu_C_2_1_18.xml";
+    path = "/pnfs/desy.de/cms/tier2/store/user/raggleto/SingleMuon/crab_SingleMu_C_2_1_18/180202_202316/000"+itoa(i)+"/Ntuple_";
+
+    if (i==0){ append = false; first = 1; last = 1000;}
+    else {append = true; first = last; last = last+1000; }
+    std::cout << first << " " << last << " " << path << '\n';
+    xmlWriterRecursive(name_file, path, first, last, append);
+  }
+
+  ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+  name_file = "../config/xmlfile/Run2017C-PromptReco-v1.xml";
+  path = "/pnfs/desy.de/cms/tier2/store/user/areimers/NTuplesRun2/2017/DATA/SingleMuon/crab_Run2017C-PromptReco-v1/170809_094309/0000/Ntuple_";
+  first = 1;
+  last = 1000;
+  append = false;
+  // xmlWriterRecursive(name_file, path, first, last, append);
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -42,7 +66,7 @@ void xmlfileWriter() {
   first = 1;
   last = 1000;
   append = false;
-  xmlWriterRecursive(name_file, path, first, last, append);
+  // xmlWriterRecursive(name_file, path, first, last, append);
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -150,4 +174,14 @@ void xmlWriterRecursive(string name_file, string path, int first, int last, bool
   }
 
   myfile.close();
+}
+
+
+
+std::string itoa(int i)
+{
+  char res[10];
+  sprintf(res, "%d", i);
+  std::string ret(res);
+  return ret;
 }

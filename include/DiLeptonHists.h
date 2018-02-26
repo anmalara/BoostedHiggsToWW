@@ -23,6 +23,7 @@ public:
     TH1F *dilep_number;
     TH1F *diele_number, *diele_charge, *diele_m, *diele_pt, *diele_eta, *diele_phi, *diele_deltaR;
     TH1F *dimuon_number, *dimuon_charge, *dimuon_m, *dimuon_pt, *dimuon_eta, *dimuon_phi, *dimuon_deltaR;
+    TH2F *pt_muon_2, *pt_ele_2;
 };
 
 }

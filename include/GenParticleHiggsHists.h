@@ -20,12 +20,15 @@ namespace uhh2examples {
     virtual ~GenParticleHiggsHists();
 
   private:
+    TH1F *numbers, *flavor_Z, *flavor_H, *flavor_W1, *flavor_W2, *flavor_muon, *flavor_ele;
+    TH1F *number_muon, *pt_muon, *pt_muon_Z, *eta_muon, *phi_muon, *charge_muon;
+    TH1F *number_ele, *pt_ele, *pt_ele_Z, *eta_ele, *phi_ele, *charge_ele;
     TH1F *mass_higgs, *pt_higgs, *eta_higgs, *phi_higgs;
     TH1F *mass_w1, *pt_w1, *eta_w1, *phi_w1;
     TH1F *mass_w2, *pt_w2, *eta_w2, *phi_w2;
     TH1F *mass_ww, *pt_ww, *eta_ww, *phi_ww;
     TH1F *DeltaRW1H, *DeltaRW2H, *DeltaRWW, *DeltaRW1jet, *DeltaRW2jet, *DeltaRHjet;
-    TH2F *DeltaRW1H_DeltaRW2H, *DeltaRW1jet_DeltaRW2jet;
+    TH2F *DeltaRW1H_DeltaRW2H, *DeltaRW1jet_DeltaRW2jet, *DeltaRHjet_ptjet, *pTH_pTJet, *pt_muon_pt_muon, *pt_ele_pt_ele;
 
   };
 

@@ -24,9 +24,7 @@ bool TopJetLeptonOverlapRemoval::process(Event & event){
       if (skip_jet) result.push_back(jet);
     }
     std::swap(result, *event.topjets);
-
     result.clear();
-
   }
 
   if(event.electrons) {
@@ -36,7 +34,24 @@ bool TopJetLeptonOverlapRemoval::process(Event & event){
       if (skip_jet) result.push_back(jet);
     }
     std::swap(result, *event.topjets);
+  }
 
+  return true;
+}
+
+GenTopJetLeptonOverlapRemoval::GenTopJetLeptonOverlapRemoval(double deltaRmin_): deltaRmin(deltaRmin_){}
+bool GenTopJetLeptonOverlapRemoval::process(Event & event){
+
+  assert(event.gentopjets);
+  std::vector<GenTopJet> result;
+
+  if (event.genparticles) {
+    for(const auto & jet : *event.gentopjets){
+      bool skip_jet = true;
+      for(const auto & lepton : *event.genparticles){ if ( XOR(abs(lepton.pdgId()) == 13, abs(lepton.pdgId()) == 11) ) skip_jet = skip_jet && deltaR(jet, lepton) > deltaRmin; }
+      if (skip_jet) result.push_back(jet);
+    }
+    std::swap(result, *event.gentopjets);
   }
 
   return true;
@@ -49,8 +64,12 @@ void sort_topjet_H(std::vector<TopJet> & jets, GenParticle H){
   std::sort(jets.begin(), jets.end(), [H](const TopJet &jet1, const TopJet &jet2 ){return uhh2::deltaR(H, jet1) < uhh2::deltaR(H, jet2);});
 }
 
+void sort_gentopjet_H(std::vector<GenTopJet> & jets, GenParticle H){
+  std::sort(jets.begin(), jets.end(), [H](const GenTopJet &jet1, const GenTopJet &jet2 ){return uhh2::deltaR(H, jet1) < uhh2::deltaR(H, jet2);});
+}
+
 void sort_topjet(std::vector<TopJet> & jets, auto diLep){
-  std::sort(jets.begin(), jets.end(), [diLep](const TopJet &jet1, const TopJet &jet2 ){return deltaPhi(diLep, jet1) > deltaPhi(diLep, jet2);});
+  std::sort(jets.begin(), jets.end(), [diLep](const TopJet &jet1, const TopJet &jet2 ){return deltaR(diLep, jet1) > deltaR(diLep, jet2);});
 }
 
 void sort_topjet_by_dilepdist(uhh2::Event & event){

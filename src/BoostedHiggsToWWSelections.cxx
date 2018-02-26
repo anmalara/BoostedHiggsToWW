@@ -37,64 +37,135 @@ bool DijetSelection::passes(const Event & event){
 
 ////////////////////////////////////////////////////////
 
-PtElecSelection::PtElecSelection(float pt_electron_): pt_electron(pt_electron_){}
+PtElecSelection::PtElecSelection(float pt_electron_, float min_isolation_): pt_electron(pt_electron_), min_isolation(min_isolation_) {}
 
 bool PtElecSelection::passes(const Event & event){
   assert(event.electrons); // if this fails, it probably means electrons are not read in
+  // std::sort_by_pt<Electron>(*event.electrons);
+  // if (event.electrons->size() < 2) return false;
+  // if ((event.electrons)->at(0)).pt() < pt_electron) return false;
+  // if ((event.electrons)->at(1)).pt() < pt_electron) return false;
 
-  bool skip_event = true;
-
-  for(const auto & electron : *event.electrons){
-    skip_event = skip_event && electron.pt() > pt_electron;
-    if(!skip_event) continue;
+  std::vector<Electron> result;
+  for(const auto & ele : *event.electrons){
+    if (ele.pt() > pt_electron &&  ele.relIso() < min_isolation) result.push_back(ele);
   }
+  if (result.size() < 1) return false;
+  std::swap(result, *event.electrons);
+  return true;
 
-  return skip_event;
 }
 
 ////////////////////////////////////////////////////////
 
-PtMuonSelection::PtMuonSelection(float pt_muon_): pt_muon(pt_muon_){}
+PtMuonSelection::PtMuonSelection(float pt_muon_, float min_isolation_): pt_muon(pt_muon_), min_isolation(min_isolation_) {}
 
 bool PtMuonSelection::passes(const Event & event){
   assert(event.muons); // if this fails, it probably means muons are not read in
 
-  bool skip_event = true;
+  // sort_by_pt<Muon>(*event.muons);
+  // if (event.muons->size() < 2) return false;
+  // if ((event.muons)->at(0)).pt() < pt_muon) return false;
+  // if ((event.muons)->at(1)).pt() < pt_muon) return false;
 
-  for(const auto & muon: *event.muons){
-    skip_event = skip_event && muon.pt() > pt_muon;
-    if(!skip_event) continue;
+  std::vector<Muon> result;
+  for(const auto & muon : *event.muons){
+    if (muon.pt() > pt_muon &&  muon.relIso() < min_isolation) result.push_back(muon);
   }
-
-  return skip_event;
+  if (result.size() < 1) return false;
+  std::swap(result, *event.muons);
+  return true;
 }
 
 ////////////////////////////////////////////////////////
 
-DiElecSelection::DiElecSelection(float min_isolation_): min_isolation(min_isolation_){}
+DiElecSelection::DiElecSelection(){}
 
 bool DiElecSelection::passes(const Event & event){
-  assert(event.electrons); // if this fails, it probably means electron are not read in
-  if(event.electrons->size() != 2) return false;
-  const auto & ele1 = event.electrons->at(0);
-  const auto & ele2 = event.electrons->at(1);
-  auto isolation_1 = ele1.relIso();
-  auto isolation_2 = ele2.relIso();
-  return isolation_1 < min_isolation && isolation_2 < min_isolation;
-}
+  assert(event.electrons); // if this fails, it probably means electrons are not read in
+  if(event.electrons->size() < 2) return false;
+  std::vector<Electron> result;
 
+  for (unsigned int i = 0; i < event.electrons->size(); i++) {
+    const auto & lep1 = event.electrons->at(i);
+    bool isFound = false;
+    for (unsigned int j = 0; j < event.electrons->size(); j++) {
+      if (j != i) {
+        const auto & lep2 = event.electrons->at(j);
+        auto diLep = lep1.v4() + lep2.v4();
+        if (diLep.M() > 81 && diLep.M() < 101 && (lep1.charge() + lep2.charge() == 0) ) isFound = true;
+        if (isFound) continue;
+      }
+    }
+    if (isFound) result.push_back(lep1);
+  }
+  std::swap(result, *event.electrons);
+  if (event.electrons->size() > 2) {
+    result.clear();
+    float min = 10;
+    int pos1 = 0, pos2 = 0;
+    for (unsigned int i = 0; i < event.electrons->size(); i++) {
+      const auto & lep1 = event.electrons->at(i);
+      for (unsigned int j = 0; j < event.electrons->size(); j++) {
+        if (j != i) {
+          const auto & lep2 = event.electrons->at(j);
+          auto diLep = lep1.v4() + lep2.v4();
+          if ( fabs(diLep.M() - 91) < min ) {min = fabs(diLep.M() - 91); pos1 = i; pos2 = j;  }
+        }
+      }
+    }
+    if (pos1 != 0 || pos2 != 0){ result.push_back(event.electrons->at(pos1));  result.push_back(event.electrons->at(pos2));}
+    std::swap(result, *event.electrons);
+  }
+  if (event.electrons->size() < 2) return false;
+  if(event.electrons->size() == 2) return true;
+  std::cout << "WARNING " << __LINE__  << '\n';
+  return false;
+}
 ////////////////////////////////////////////////////////
 
-DiMuonSelection::DiMuonSelection(float min_isolation_): min_isolation(min_isolation_){}
+DiMuonSelection::DiMuonSelection() {}
 
 bool DiMuonSelection::passes(const Event & event){
   assert(event.muons); // if this fails, it probably means muons are not read in
-  if(event.muons->size() != 2) return false;
-  const auto & muon1 = event.muons->at(0);
-  const auto & muon2 = event.muons->at(1);
-  auto isolation_1 = muon1.relIso();
-  auto isolation_2 = muon2.relIso();
-  return isolation_1 < min_isolation && isolation_2 < min_isolation;
+  if(event.muons->size() < 2) return false;
+  std::vector<Muon> result;
+
+  for (unsigned int i = 0; i < event.muons->size(); i++) {
+    const auto & lep1 = event.muons->at(i);
+    bool isFound = false;
+    for (unsigned int j = 0; j < event.muons->size(); j++) {
+      if (j != i) {
+        const auto & lep2 = event.muons->at(j);
+        auto diLep = lep1.v4() + lep2.v4();
+        if (diLep.M() > 81 && diLep.M() < 101 && (lep1.charge() + lep2.charge() == 0) ) isFound = true;
+        if (isFound) continue;
+      }
+    }
+    if (isFound) result.push_back(lep1);
+  }
+  std::swap(result, *event.muons);
+  if (event.muons->size() > 2) {
+    result.clear();
+    float min = 10;
+    int pos1 = 0, pos2 = 0;
+    for (unsigned int i = 0; i < event.muons->size(); i++) {
+      const auto & lep1 = event.muons->at(i);
+      for (unsigned int j = 0; j < event.muons->size(); j++) {
+        if (j != i) {
+          const auto & lep2 = event.muons->at(j);
+          auto diLep = lep1.v4() + lep2.v4();
+          if ( fabs(diLep.M() - 91) < min ) {min = fabs(diLep.M() - 91); pos1 = i; pos2 = j;  }
+        }
+      }
+    }
+    if (pos1 != 0 || pos2 != 0){ result.push_back(event.muons->at(pos1));  result.push_back(event.muons->at(pos2));}
+    std::swap(result, *event.muons);
+  }
+  if (event.muons->size() < 2) return false;
+  if(event.muons->size() == 2) return true;
+  std::cout << "WARNING " << __LINE__  << '\n';
+  return false;
 }
 
 ////////////////////////////////////////////////////////
@@ -104,9 +175,23 @@ ZSelection::ZSelection(){}
 bool ZSelection::passes(const Event & event){
   assert(event.muons || event.electrons); // if this fails, it probably means muons/electrons are not read in
 
-  if(!XOR(event.muons->size()==2, event.electrons->size()==2)){
-    std::cout << "\n @@@ WARNING -- ZSelection::passes -- unexpected number of muons/electrons in the event (!=2) --- check selection. returning 'false'\n";
+  if (event.muons->size() != 2 && event.electrons->size() != 2 ){
+    std::cout << event.muons->size() << " "  << event.electrons->size() << '\n';
+    std::cout << "\n @@@ WARNING -- ZSelection::passes -- unexpected number of muons/electrons in the event (>2) --- check selection. returning 'false'\n";
     return false;
+  }
+
+  // if(!XOR(event.muons->size()==2, event.electrons->size()==2)){
+  if(event.muons->size()==2 && event.electrons->size()==2){
+    Electron ele1 = event.electrons->at(0);
+    Electron ele2 = event.electrons->at(1);
+    Muon muon1 = event.muons->at(0);
+    Muon muon2 = event.muons->at(1);
+    if ( fabs((event.muons->at(0).v4()+event.muons->at(1).v4()).M()-91) <= fabs((event.electrons->at(0).v4()+event.electrons->at(1).v4()).M()-91)){
+      std::vector<Electron> result; std::swap(result, *event.electrons);
+    } else{
+      std::vector<Muon> result; std::swap(result, *event.muons);
+    }
   }
 
   Particle lep1, lep2;
@@ -121,8 +206,8 @@ bool ZSelection::passes(const Event & event){
     lep2= event.muons->at(1);
   }
 
-  auto dilep = lep1.v4() + lep2.v4();
-  if(dilep.M() < 81 || dilep.M() > 101) return false;
+  auto diLep = lep1.v4() + lep2.v4();
+  if(diLep.M() < 81 || diLep.M() > 101 || (lep1.charge() + lep2.charge() != 0) ) return false;
   return true;
 }
 
