@@ -15,20 +15,22 @@
 // #include "../src/BoostedHiggsToWWUtils.cxx"
 
 TCanvas* overlap2histos(TH1* histo1, TH1* histo2, bool full=false, bool norm=false);
-TCanvas* overlaphistos(std::vector<TH1*> histos, TH1* histo_data, bool data = false, bool norm = false, bool full = false);
+TCanvas* overlaphistos(std::vector<TH1*> histos, TH1* histo_data, string histo_name, bool data = false, bool norm = false, bool full = false);
 TH1F* CutFlow(string file_name, std::vector<string> name_dir, string histo_name = "histo_cut", bool norm = false, float cross_sec = 1);
 bool OrderHistos(TH1* h1, TH1* h2);
 
-void DisplayCutFlow(string inputdir = "../file/outputfile/", string outdir = "../file/outputfile/", bool quick = true) {
+void DisplayCutFlow(string inputdir = "../file/inputfile/", string outdir = "../file/inputfile/", bool quick = true) {
 
-  // string file_name_signal = inputdir+"uhh2.AnalysisModuleRunner.MC.signal.root";
-  string file_name_signal = "../file/outputfile/MCTruthMatching/uhh2.AnalysisModuleRunner.MC.signal_new.root";
+  //string file_name_signal = "../file/outputfile/MCTruthMatching/uhh2.AnalysisModuleRunner.MC.signal_new.root";
   //string file_name_signal = "../file/outputfile/feasibilitystudy_signalnew/uhh2.AnalysisModuleRunner.MC.signal_new.root";
+  string file_name_data   = inputdir+"uhh2.AnalysisModuleRunner.DATA.Data_2017C.root";
+  string file_name_signal = inputdir+"uhh2.AnalysisModuleRunner.MC.signal_new.root";
   string file_name_bkg_DY = inputdir+"uhh2.AnalysisModuleRunner.MC.bkg_DYJetsToLL_Pt-250To400.root";
   string file_name_bkg_TT = inputdir+"uhh2.AnalysisModuleRunner.MC.bkg_TT.root";
   string file_name_bkg_ZZ = inputdir+"uhh2.AnalysisModuleRunner.MC.bkg_ZZ.root";
   string file_name_bkg_ZW = inputdir+"uhh2.AnalysisModuleRunner.MC.bkg_ZW.root";
 
+  TFile *file_data   = new TFile((file_name_data).c_str());
   TFile *file_signal = new TFile((file_name_signal).c_str());
   TFile *file_bkg_DY = new TFile((file_name_bkg_DY).c_str());
   TFile *file_bkg_TT = new TFile((file_name_bkg_TT).c_str());
@@ -37,6 +39,7 @@ void DisplayCutFlow(string inputdir = "../file/outputfile/", string outdir = "..
 
   std::vector<string> name_dir;
   std::vector<string> name_histo;
+  std::vector<string> name_histo_dir;
 
 
   TList *dirlist = file_bkg_DY->GetListOfKeys();
@@ -52,7 +55,7 @@ void DisplayCutFlow(string inputdir = "../file/outputfile/", string outdir = "..
       TDirectory *dir = file_bkg_DY->GetDirectory(key->GetName());
       string name = dir->GetName();
       name_dir.push_back(name);
-      gSystem->Exec(("mkdir -p "+outdir+name).c_str());
+      // gSystem->Exec(("mkdir -p "+outdir+name).c_str());
       TList *dirlist_1 = dir->GetListOfKeys();
       TIterator *iter_1 = dirlist_1->MakeIterator();
       TObject *key_1 = iter_1->Next();
@@ -70,11 +73,13 @@ void DisplayCutFlow(string inputdir = "../file/outputfile/", string outdir = "..
   }
 
   if(quick) {
-    name_histo = {"boostedJet_angular_sel/SDmass_jet1"};
+    name_histo_dir = {"boostedJet_angular_sel", "boostedJet_angular_sel", "boostedJet_angular_sel", "boostedJet_angular_sel", "boostedJet_angular_sel", "boostedJet_angular_sel", "boostedJet_angular_sel"};
+    name_histo = {"SDmass_jet1", "tau1_jet1", "tau2_jet1", "tau3_jet1", "tau21_jet1", "tau31_jet1", "tau32_jet1"};
     name_dir = {"nJet_noCuts", "boostedJet_sel", "ptMuon_sel", "ptEle_sel", "diMuon_sel", "diEle_sel", "diLepton_Z_sel", "boostedJet_angular_sel" };
   }
 
   bool cut_norm = true;
+  TH1F* histo_cut_data   = CutFlow(file_name_data, name_dir, "Data", cut_norm, 1);
   TH1F* histo_cut_signal = CutFlow(file_name_signal, name_dir, "signal", cut_norm, 0.00022); //0.752
   TH1F* histo_cut_bkg_DY = CutFlow(file_name_bkg_DY, name_dir, "DY", cut_norm, 2.991);
   TH1F* histo_cut_bkg_TT = CutFlow(file_name_bkg_TT, name_dir, "TT", cut_norm, 832);
@@ -89,10 +94,10 @@ void DisplayCutFlow(string inputdir = "../file/outputfile/", string outdir = "..
   histo_cuts.push_back(histo_cut_bkg_ZW);
 
 
-  TCanvas* c_cutflow = overlaphistos(histo_cuts, histo_cut_signal);
+  TCanvas* c_cutflow = overlaphistos(histo_cuts, histo_cut_data, "CutFlow");
+  c_cutflow->SetLogy();
   c_cutflow->SaveAs((outdir+"cutflow.png").c_str());
-
-
+  c_cutflow->SaveAs((outdir+"cutflow.pdf").c_str());
 
   std::vector<TCanvas*> canvases;
   TH1F *histo1, *histo2, *histotemp;
@@ -110,11 +115,11 @@ void DisplayCutFlow(string inputdir = "../file/outputfile/", string outdir = "..
 }
 */
 for (int i = 0; i < name_histo.size(); i++) {
-  TH1F* histo_signal = (TH1F*)file_signal->Get((name_histo[i]).c_str());
-  TH1F* histo_bkg_DY = (TH1F*)file_bkg_DY->Get((name_histo[i]).c_str());
-  TH1F* histo_bkg_TT = (TH1F*)file_bkg_TT->Get((name_histo[i]).c_str());
-  TH1F* histo_bkg_ZZ = (TH1F*)file_bkg_ZZ->Get((name_histo[i]).c_str());
-  TH1F* histo_bkg_ZW = (TH1F*)file_bkg_ZW->Get((name_histo[i]).c_str());
+  TH1F* histo_signal = (TH1F*)file_signal->Get((name_histo_dir[i]+"/"+name_histo[i]).c_str());
+  TH1F* histo_bkg_DY = (TH1F*)file_bkg_DY->Get((name_histo_dir[i]+"/"+name_histo[i]).c_str());
+  TH1F* histo_bkg_TT = (TH1F*)file_bkg_TT->Get((name_histo_dir[i]+"/"+name_histo[i]).c_str());
+  TH1F* histo_bkg_ZZ = (TH1F*)file_bkg_ZZ->Get((name_histo_dir[i]+"/"+name_histo[i]).c_str());
+  TH1F* histo_bkg_ZW = (TH1F*)file_bkg_ZW->Get((name_histo_dir[i]+"/"+name_histo[i]).c_str());
   histo_signal->SetName(("Signal "+to_string(histo_signal->Integral())).c_str());
   histo_signal->GetSumw2();
   histo_signal->Scale(1./histo_signal->Integral());
@@ -136,9 +141,9 @@ for (int i = 0; i < name_histo.size(); i++) {
   histos.push_back(histo_bkg_DY);
   histos.push_back(histo_bkg_ZZ);
   histos.push_back(histo_bkg_ZW);
-  TCanvas* c = overlaphistos(histos, histo_signal);
-  c->SetLogy();
-  c->SaveAs((outdir+name_histo[i]+".png").c_str());
+  TCanvas* c = overlaphistos(histos, histo_signal, name_histo[i]);
+  c->SaveAs((outdir+name_histo_dir[i]+"_"+name_histo[i]+".png").c_str());
+  c->SaveAs((outdir+name_histo_dir[i]+"_"+name_histo[i]+".pdf").c_str());
 }
 
 
@@ -150,7 +155,7 @@ for (int i = 0; i < name_histo.size(); i++) {
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-TCanvas* overlaphistos(std::vector<TH1*> histos, TH1* histo_data, bool data = false, bool norm = false, bool full = false){
+TCanvas* overlaphistos(std::vector<TH1*> histos, TH1* histo_data, string histo_name, bool data = false, bool norm = false, bool full = false){
   setTDRStyle();
   gStyle->SetOptStat(false);
 
@@ -194,7 +199,7 @@ TCanvas* overlaphistos(std::vector<TH1*> histos, TH1* histo_data, bool data = fa
     for (int i = 0; i < histos.size(); i++) histos[i]->SetFillStyle(1001);
   }
 
-  THStack* hs = new THStack("hs","Cut Flow ");
+  THStack* hs = new THStack("hs", histo_name.c_str());
 
   for (int i = 0; i < histos.size(); i++) hs->Add(histos[i]);
   if (data) hs->Add(histo_data);

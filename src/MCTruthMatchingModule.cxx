@@ -104,7 +104,7 @@ namespace uhh2examples {
     common->init(ctx);
 
     jetcleaner.reset(new JetCleaner(ctx, 30.0, 2.4));
-    muoncleaner.reset(new MuonCleaner (AndId<Muon>(MuonIDMedium(), PtEtaCut(1., 4))));
+    muoncleaner.reset(new MuonCleaner (AndId<Muon>(MuonID(Muon::CutBasedIdMedium), PtEtaCut(1., 4))));
     elecleaner.reset(new ElectronCleaner (AndId<Electron>(ElectronID_Spring16_medium, PtEtaCut(1., 4))));
     overlap_removal.reset(new TopJetLeptonOverlapRemoval(0.8));
     overlap_removal_genjet.reset(new GenTopJetLeptonOverlapRemoval(0.8));
@@ -235,7 +235,7 @@ namespace uhh2examples {
     // 1. run all modules other modules.
     common->process(event);
     jetcleaner->process(event);
-    // muoncleaner->process(event);
+    muoncleaner->process(event);
     elecleaner->process(event);
     overlap_removal->process(event);
     overlap_removal_genjet->process(event);

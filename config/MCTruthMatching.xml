@@ -30,7 +30,7 @@
 
   <Cycle Name="uhh2::AnalysisModuleRunner" OutputDirectory="&OUTDIR;" PostFix="" TargetLumi="1" >
 
-    <InputData Type="MC" Version="signal_new" Lumi="0.0022" NEventsMax="&NEVT_signal;" Cacheable="False">                                 &MC_HZ_HiggsToWWZToLL;      <InputTree Name="AnalysisTree"/> <OutputTree Name="AnalysisTree"/> </InputData>
+    <InputData Type="MC" Version="signal_new_match" Lumi="0.0022" NEventsMax="&NEVT_signal;" Cacheable="False">                                 &MC_HZ_HiggsToWWZToLL;      <InputTree Name="AnalysisTree"/> <OutputTree Name="AnalysisTree"/> </InputData>
 
 
     <UserConfig>
