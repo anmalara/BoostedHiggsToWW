@@ -19,269 +19,213 @@
 using namespace std;
 using namespace uhh2;
 
-namespace uhh2examples {
+class FeasibilityStudyModule: public AnalysisModule {
+public:
 
-  /** \brief Basic analysis example of an AnalysisModule (formerly 'cycle') in UHH2
-  *
-  * This is the central class which calls other AnalysisModules, Hists or Selection classes.
-  * This AnalysisModule, in turn, is called (via AnalysisModuleRunner) by SFrame.
-  */
-  class FeasibilityStudyModule: public AnalysisModule {
-  public:
+  explicit FeasibilityStudyModule(Context & ctx);
+  virtual bool process(Event & event) override;
 
-    explicit FeasibilityStudyModule(Context & ctx);
-    virtual bool process(Event & event) override;
+private:
 
-  private:
+  // Define variables
+  string SysType_PU;
+  bool isMC;
 
-    std::unique_ptr<CommonModules> common;
+  // Define histograms
+  #define  DEFINEHISTOS(extention)\
+  std::unique_ptr<Hists> h_nJet_##extention, h_Electron_##extention, h_Muon_##extention, h_DiLepton_##extention;\
 
-    std::unique_ptr<JetCleaner> 	jetcleaner;
-    std::unique_ptr<MuonCleaner>	muoncleaner;
-    std::unique_ptr<ElectronCleaner>	elecleaner;
-    std::unique_ptr<TopJetLeptonOverlapRemoval> overlap_removal;
+  DEFINEHISTOS(nocuts)
+  DEFINEHISTOS(cleaned)
+  DEFINEHISTOS(trigger)
 
-    // Selections
-    std::unique_ptr<Selection> nJet_sel, boostedJet_sel;
-    std::unique_ptr<Selection> ptMuon_sel, ptEle_sel, nMuon_sel, nEle_sel, diMuon_sel, diEle_sel, Z_sel;
-    std::unique_ptr<Selection> phiAngular_sel;
+  // CommonModules
+  std::unique_ptr<CommonModules> common;
+  // std::unique_ptr<JetLeptonOverlapRemoval> overlap_removal;
 
-    std::unique_ptr<uhh2::Selection> trigger_sel;
+  // Define selections
+  std::unique_ptr<uhh2::Selection> trigger_sel;
 
-    std::unique_ptr<uhh2::AndSelection> muon_sel, ele_sel;
+  std::shared_ptr<Selection> NBoostedJetSel;
 
-    // Histos
-    std::unique_ptr<Hists> h_nJet_nocuts, h_ele_nocuts, h_muon_nocuts, h_diLepton_nocuts;
-    std::unique_ptr<Hists> h_nJet_trigger, h_ele_trigger, h_muon_trigger, h_diLepton_trigger;
-    std::unique_ptr<Hists> h_nJet_cleaned, h_ele_cleaned, h_muon_cleaned, h_diLepton_cleaned;
-    std::unique_ptr<Hists> h_nJet, h_boostedJet_sel;
-    std::unique_ptr<Hists> h_ptmuon_sel, h_ptele_sel, h_nmuon_sel, h_nele_sel, h_dimuon_sel, h_diele_sel, h_dilep_sel;
-    std::unique_ptr<Hists> h_dimuon_Z_sel, h_diele_Z_sel, h_dilep_Z_sel;
-    std::unique_ptr<Hists> h_jet_angular_sel, h_dilep_angular_sel;
+  DEFINEHISTOS(NBoostedJetSel)
 
-    Event::Handle< std::vector< TopJet > > unsorted_jets, matched_jets;
-  };
+  #define DEFINELEPTONSELECTION(Lepton)\
+  std::unique_ptr<uhh2::AndSelection> Lepton##Sel;\
+  std::shared_ptr<Selection> N##Lepton##Sel, Pt##Lepton##Sel, Di##Lepton##Sel, PhiAngularSel##Lepton;\
+  DEFINEHISTOS(N##Lepton)\
+  DEFINEHISTOS(Pt##Lepton)\
+  DEFINEHISTOS(Di##Lepton)\
+  DEFINEHISTOS(Jet##Lepton)\
+  DEFINEHISTOS(PhiAngularSel##Lepton)\
 
 
-  FeasibilityStudyModule::FeasibilityStudyModule(Context & ctx){
-    // In the constructor, the typical tasks are to initialize the
-    // member variables, in particular the AnalysisModules such as
-    // CommonModules or some cleaner module, Selections and Hists.
-    // But you can do more and e.g. access the configuration, as shown below.
-
-    // If needed, access the configuration of the module here, e.g.:
-    // string testvalue = ctx.get("TestKey", "<not set>");
-    // cout << "TestKey in the configuration was: " << testvalue << endl;
-
-    // If running in SFrame, the keys "dataset_version", "dataset_type", "dataset_lumi",
-    // and "target_lumi" are set to the according values in the xml file. For CMSSW, these are
-    // not set automatically, but can be set in the python config file.
-    // for(auto & kv : ctx.get_all()){
-    //   cout << " " << kv.first << " = " << kv.second << endl;
-    // }
-
-    // 1. setup other modules. CommonModules and the JetCleaner:
-    common.reset(new CommonModules());
-    // TODO: configure common here, e.g. by
-    // calling common->set_*_id or common->disable_*
-    common->disable_lumisel();
-    common->disable_mclumiweight();
-    // common->disable_jec();
-    common->disable_mcpileupreweight();
-    common->switch_metcorrection();
-    const bool isMC = (ctx.get("dataset_type") == "MC");
-    if (isMC) {
-      common->disable_metfilters();
-    }
-    common->init(ctx);
-
-    jetcleaner.reset(new JetCleaner(ctx, 30.0, 2.4));
-    muoncleaner.reset(new MuonCleaner (AndId<Muon>(MuonID(Muon::CutBasedIdMedium), PtEtaCut(1., 4))));
-    elecleaner.reset(new ElectronCleaner (AndId<Electron>(ElectronID_Spring16_medium, PtEtaCut(1., 4))));
-    overlap_removal.reset(new TopJetLeptonOverlapRemoval(0.8));
-
-    // note that the JetCleaner is only kept for the sake of example;
-    // instead of constructing a jetcleaner explicitly,
-    // the cleaning can also be achieved with less code via CommonModules with:
-    // common->set_jet_id(PtEtaCut(30.0, 2.4));
-    // before the 'common->init(ctx)' line.
-
-    // 2. set up selections
-    nMuon_sel.reset(new NMuonSelection(2));
-    nEle_sel.reset(new NElectronSelection(2));
-    ptMuon_sel.reset(new PtMuonSelection(30, 0.2));
-    ptEle_sel.reset(new PtElecSelection(30, 0.2));
-    diMuon_sel.reset(new DiMuonSelection());
-    diEle_sel.reset(new DiElecSelection());
-    Z_sel.reset(new ZSelection());
-    nJet_sel.reset(new NJetSelection(1)); // see common/include/NSelections.h
-    boostedJet_sel.reset(new BoostedJetSelection(300));
-    phiAngular_sel.reset(new PhiAngularCut(2.7));
-
-    const std::string& trigger = ctx.get("trigger", "NULL");
-    if(trigger != "NULL") trigger_sel.reset(new TriggerSelection(trigger));
-    else trigger_sel.reset(new AndSelection(ctx));
-
-    muon_sel.reset(new uhh2::AndSelection(ctx, "muon_filters"));
-    muon_sel->add<NMuonSelection>("2 muons", 2);
-    muon_sel->add<PtMuonSelection>("pt_muon", 30);
-    muon_sel->add<DiMuonSelection>("diMuon");
-    muon_sel->add<ZSelection>("Z_selection");
-    muon_sel->add<NJetSelection>("1 Jet", 1);
-    muon_sel->add<BoostedJetSelection>("boosted Jet", 300);
-    muon_sel->add<PhiAngularCut>("PhiAngularCut", 2.7);
-
-    ele_sel.reset(new uhh2::AndSelection(ctx, "ele_filters"));
-    ele_sel->add<NElectronSelection>("2 electrons", 2);
-    ele_sel->add<PtElecSelection>("pt_electron", 30);
-    ele_sel->add<DiElecSelection>("diEle");
-    ele_sel->add<ZSelection>("Z_selection");
-    ele_sel->add<NJetSelection>("1 Jet", 1);
-    ele_sel->add<BoostedJetSelection>("boosted Jet", 300);
-    ele_sel->add<PhiAngularCut>("PhiAngularCut", 2.7);
-
-    // 3. Set up Hists classes:
-    h_nJet_nocuts.reset(new BoostedHiggsToWWHists(ctx, "nJet_noCuts"));
-    h_ele_nocuts.reset(new ElectronHists(ctx, "ele_noCuts"));
-    h_muon_nocuts.reset(new MuonHists(ctx, "muon_noCuts"));
-    h_diLepton_nocuts.reset(new DiLeptonHists(ctx, "diLepton_noCuts"));
-
-    h_nJet_trigger.reset(new BoostedHiggsToWWHists(ctx, "nJet_trigger"));
-    h_ele_trigger.reset(new ElectronHists(ctx, "ele_trigger"));
-    h_muon_trigger.reset(new MuonHists(ctx, "muon_trigger"));
-    h_diLepton_trigger.reset(new DiLeptonHists(ctx, "diLepton_trigger"));
-
-    h_nJet_cleaned.reset(new BoostedHiggsToWWHists(ctx, "nJet_cleaned"));
-    h_ele_cleaned.reset(new ElectronHists(ctx, "ele_cleaned"));
-    h_muon_cleaned.reset(new MuonHists(ctx, "muon_cleaned"));
-    h_diLepton_cleaned.reset(new DiLeptonHists(ctx, "diLepton_cleaned"));
-
-    h_nmuon_sel.reset(new MuonHists(ctx, "nmuon_sel"));
-    h_nele_sel.reset(new ElectronHists(ctx, "nele_sel"));
-    h_ptmuon_sel.reset(new MuonHists(ctx, "ptMuon_sel"));
-    h_ptele_sel.reset(new ElectronHists(ctx, "ptEle_sel"));
-    h_dimuon_sel.reset(new MuonHists(ctx, "diMuon_sel"));
-    h_diele_sel.reset(new ElectronHists(ctx, "diEle_sel"));
-    h_dilep_sel.reset(new DiLeptonHists(ctx, "diLepton_sel"));
-
-    h_dimuon_Z_sel.reset(new MuonHists(ctx, "diMuon_Z_sel"));
-    h_diele_Z_sel.reset(new ElectronHists(ctx, "diEle_Z_sel"));
-    h_dilep_Z_sel.reset(new DiLeptonHists(ctx, "diLepton_Z_sel"));
-
-    h_nJet.reset(new BoostedHiggsToWWHists(ctx, "nJet_sel"));
-    h_boostedJet_sel.reset(new BoostedHiggsToWWHists(ctx, "boostedJet_sel"));
-
-    h_jet_angular_sel.reset(new BoostedHiggsToWWHists(ctx, "boostedJet_angular_sel"));
-    h_dilep_angular_sel.reset(new DiLeptonHists(ctx, "diLepton_angular_sel"));
-
-    unsorted_jets = ctx.declare_event_output< std::vector< TopJet > >("unsorted_jets");
-
-  }
+  DEFINELEPTONSELECTION(Muon)
+  DEFINELEPTONSELECTION(Electron)
+  DEFINEHISTOS(DiLepton)
+  DEFINEHISTOS(eventSel)
 
 
-  bool FeasibilityStudyModule::process(Event & event) {
-    // cout << "Starting to process event (runid, eventid) = (" << event.run << ", " << event.event << "); weight = " << event.weight << endl;
+  // DEFINEHISTOS(PhiAngularSel)
 
-    muon_sel->passes(event);
-    ele_sel->passes(event);
-    h_nJet_nocuts->fill(event);
-    h_ele_nocuts->fill(event);
-    h_muon_nocuts->fill(event);
-    h_diLepton_nocuts->fill(event);
+  // Event::Handle< std::vector< TopJet > > unsorted_jets;
+
+};
 
 
-    // 1. run all modules other modules.
-    common->process(event);
-    jetcleaner->process(event);
-    muoncleaner->process(event);
-    elecleaner->process(event);
-    overlap_removal->process(event);
+FeasibilityStudyModule::FeasibilityStudyModule(Context & ctx){
 
-    sort_by_pt<TopJet>(*event.topjets);
-    sort_by_pt<Muon>(*event.muons);
-    sort_by_pt<Electron>(*event.electrons);
+  // Set up histograms:
+  std::string name_temp;
+  #define SETHISTOS(extension)\
+  name_temp = "nJet_"; name_temp += #extension;\
+  h_nJet_##extension.reset(new BoostedHiggsToWWHists(ctx, name_temp.c_str()));\
+  name_temp = "ele_"; name_temp += #extension;\
+  h_Electron_##extension.reset(new ElectronHists(ctx, name_temp));\
+  name_temp = "muon_"; name_temp += #extension;\
+  h_Muon_##extension.reset(new MuonHists(ctx, name_temp));\
+  name_temp = "diLepton_"; name_temp += #extension;\
+  h_DiLepton_##extension.reset(new DiLeptonHists(ctx, name_temp));\
 
-    const bool pass_trigger = trigger_sel->passes(event);
-    if(!pass_trigger) return false;
+  SETHISTOS(nocuts)
 
-    h_nJet_trigger->fill(event);
-    h_ele_trigger->fill(event);
-    h_muon_trigger->fill(event);
-    h_diLepton_trigger->fill(event);
+  // Set up variables
+  SysType_PU = ctx.get("SysType_PU");
+  isMC = (ctx.get("dataset_type") == "MC");
+  const std::string& trigger = ctx.get("trigger", "NULL");
 
+  const JetId jetId(AndId<Jet> (JetPFID(JetPFID::WP_TIGHT), PtEtaCut(30, 2.4)));
+  const TopJetId JetIdBoosted(AndId<TopJet> (JetPFID(JetPFID::WP_TIGHT), PtEtaCut(300,2.4)));
+  const MuonId muonId(AndId<Muon> (MuonID(Muon::CutBasedIdTight), PtEtaCut(1., 4.)));
+  const ElectronId eleId(AndId<Electron>(ElectronID_MVA_Fall17_loose_iso, PtEtaSCCut(1., 4.)));
 
-    // 2. test selections and fill histograms
-    h_nJet_cleaned->fill(event);
-    h_ele_cleaned->fill(event);
-    h_muon_cleaned->fill(event);
-    h_diLepton_cleaned->fill(event);
+  // CommonModules
+  common.reset(new CommonModules());
+  common->disable_lumisel();
+  // common->disable_mclumiweight();
+  // common->disable_jec();
+  common->disable_jersmear();
+  if (isMC) common->disable_metfilters();
+  // common->disable_mcpileupreweight();
+  common->switch_metcorrection();
+  common->disable_jetpfidfilter();
+  common->set_jet_id(jetId);
+  common->set_muon_id(muonId);
+  common->set_electron_id(eleId);
+  common->switch_jetlepcleaner();
+  common->switch_jetPtSorter();
+  common->init(ctx,SysType_PU);
 
-    // Muons Selection
-    bool nMuon_selection = nMuon_sel->passes(event);
-    bool Muon_selection = nMuon_selection;
-    if(Muon_selection) h_nmuon_sel->fill(event);
-    bool ptMuon_selection = ptMuon_sel->passes(event);
-    Muon_selection = Muon_selection && ptMuon_selection;
-    if(Muon_selection) h_ptmuon_sel->fill(event);
-    bool diMuon_selection = diMuon_sel->passes(event);
-    Muon_selection = Muon_selection && diMuon_selection;
-    if(Muon_selection) h_dimuon_sel->fill(event);
+  SETHISTOS(cleaned)
 
+  // overlap_removal.reset(new JetLeptonOverlapRemoval(0.8));
 
-    // Elecs Selection
-    bool nEle_selection = nEle_sel->passes(event);
-    bool Ele_selection = nEle_selection;
-    if(Ele_selection) h_ptele_sel->fill(event);
-    bool ptEle_selection = ptEle_sel->passes(event);
-    Ele_selection = Ele_selection && ptEle_selection;
-    if(Ele_selection) h_nele_sel->fill(event);
-    bool diEle_selection = diEle_sel->passes(event);
-    Ele_selection = Ele_selection && diEle_selection;
-    if(Ele_selection) h_diele_sel->fill(event);
-    bool event_selection = XOR(Muon_selection, Ele_selection);
-    if(event_selection) h_dilep_sel->fill(event);
+  // Set up selections
+  if(!isMC && trigger != "NULL") trigger_sel.reset(new TriggerSelection(trigger));
+  else trigger_sel.reset(new AndSelection(ctx));
+  SETHISTOS(trigger)
 
-    if (!event_selection) return false;
-    // Z Selection
-    bool Z_selection = Z_sel->passes(event);
-    Muon_selection = Muon_selection && Z_selection;
-    Ele_selection = Ele_selection && Z_selection;
-    if(Muon_selection) h_dimuon_Z_sel->fill(event);
-    if(Ele_selection) h_diele_Z_sel->fill(event);
-    event_selection = XOR(Muon_selection, Ele_selection);
-    if(event_selection) h_dilep_Z_sel->fill(event);
+  NBoostedJetSel.reset(new NTopJetSelection(1,-1,JetIdBoosted));
+  SETHISTOS(NBoostedJetSel)
 
-    // boosted Jet Selection
-    bool nJet_selection = nJet_sel->passes(event);
-    bool Jet_selection = nJet_selection;
-    if(Jet_selection) h_nJet->fill(event);
-    bool boostedJet_selection = boostedJet_sel->passes(event);
-    Jet_selection = Jet_selection && boostedJet_selection;
-    if(Jet_selection) h_boostedJet_sel->fill(event);
+  #define SETLEPTONSELECTION(Lepton)\
+  N##Lepton##Sel.reset(new N##Lepton##Selection(2));\
+  SETHISTOS(N##Lepton)\
+  Pt##Lepton##Sel.reset(new Pt##Lepton##Selection(30, 0.2));\
+  SETHISTOS(Pt##Lepton)\
+  Di##Lepton##Sel.reset(new Di##Lepton##Selection());\
+  SETHISTOS(Di##Lepton)\
+  name_temp = #Lepton; name_temp += "_filters";\
+  Lepton##Sel.reset(new uhh2::AndSelection(ctx, name_temp));\
+  name_temp = "2 "; name_temp += #Lepton;\
+  Lepton##Sel->add(name_temp, N##Lepton##Sel);\
+  name_temp = "pt_"; name_temp += #Lepton;\
+  Lepton##Sel->add(name_temp, Pt##Lepton##Sel);\
+  name_temp = "di"; name_temp += #Lepton;\
+  Lepton##Sel->add(name_temp, Di##Lepton##Sel);\
+  Lepton##Sel->add("nboostedjet >=2 ", NBoostedJetSel);\
+  SETHISTOS(Jet##Lepton)\
+  PhiAngularSel##Lepton.reset(new PhiAngularSelection##Lepton(2.7));\
+  SETHISTOS(PhiAngularSel##Lepton)\
+  Lepton##Sel->add("#Delta#phi(jet,dilep) >2.7", PhiAngularSel##Lepton);\
 
-    // Phi Angular diLep-Jet Selection
-    event_selection = event_selection && Jet_selection;
-    if (!event_selection) return false;
-    bool phiAngular_selection = phiAngular_sel->passes(event);
-    event_selection = event_selection && phiAngular_selection;
+  SETLEPTONSELECTION(Muon)
+  SETLEPTONSELECTION(Electron)
 
-    if (!event_selection) return false;
+  SETHISTOS(DiLepton)
+  SETHISTOS(eventSel)
 
-    std::vector< TopJet > my_unsorted_jets = *event.topjets;
-    event.set(unsorted_jets, std::move(my_unsorted_jets));
-    sort_topjet_by_dilepdist(event);
-    h_jet_angular_sel->fill(event);
-    h_dilep_angular_sel->fill(event);
-
-
-
-
-    // 3. decide whether or not to keep the current event in the output:
-    return event_selection;
-  }
-
-  // as we want to run the ExampleCycleNew directly with AnalysisModuleRunner,
-  // make sure the FeasibilityStudyModule is found by class name. This is ensured by this macro:
-  UHH2_REGISTER_ANALYSIS_MODULE(FeasibilityStudyModule)
+  // unsorted_jets = ctx.declare_event_output< std::vector< TopJet > >("unsorted_jets");
 
 }
+
+
+bool FeasibilityStudyModule::process(Event & event) {
+
+  #define FILLHISTOS(extension)\
+  h_nJet_##extension->fill(event);\
+  h_Electron_##extension->fill(event);\
+  h_Muon_##extension->fill(event);\
+  h_DiLepton_##extension->fill(event);\
+
+  FILLHISTOS(nocuts)
+  // 1. run all modules other modules.
+  common->process(event);
+  FILLHISTOS(cleaned)
+  // overlap_removal->process(event);
+
+  sort_by_pt<TopJet>(*event.topjets);
+  sort_by_pt<Muon>(*event.muons);
+  sort_by_pt<Electron>(*event.electrons);
+
+  const bool pass_trigger = trigger_sel->passes(event);
+  if(!pass_trigger) return false;
+  FILLHISTOS(trigger)
+
+  // boosted Jet Selection
+  bool JetPass = true;
+  bool NBoostedJetPass = NBoostedJetSel->passes(event);
+  JetPass = JetPass && NBoostedJetPass;
+  if(JetPass) FILLHISTOS(NBoostedJetSel)
+  sort_by_pt<TopJet>(*event.topjets);
+
+  // Lepton Selection
+
+  #define PASSLEPTONSELECTION(Lepton)\
+  bool Lepton##Pass = true;\
+  bool N##Lepton##Pass = N##Lepton##Sel->passes(event);\
+  Lepton##Pass = Lepton##Pass && N##Lepton##Pass;\
+  if(Lepton##Pass) {FILLHISTOS(N##Lepton)}\
+  bool Pt##Lepton##Pass = Pt##Lepton##Sel->passes(event);\
+  Lepton##Pass = Lepton##Pass && Pt##Lepton##Pass;\
+  if(Lepton##Pass) {FILLHISTOS(Pt##Lepton)}\
+  bool Di##Lepton##Pass = Di##Lepton##Sel->passes(event);\
+  Lepton##Pass = Lepton##Pass && Di##Lepton##Pass;\
+  if(Lepton##Pass) {FILLHISTOS(Di##Lepton)}\
+  Lepton##Pass = Lepton##Pass && JetPass;\
+  if(Lepton##Pass) {FILLHISTOS(Jet##Lepton)}\
+  bool PhiAngularSel##Lepton##Pass = PhiAngularSel##Lepton->passes(event);\
+  Lepton##Pass = Lepton##Pass && PhiAngularSel##Lepton##Pass;\
+  if(Lepton##Pass) {FILLHISTOS(PhiAngularSel##Lepton)}\
+  bool Total##Lepton##Pass = Lepton##Sel->passes(event);\
+  if (Lepton##Pass != Total##Lepton##Pass) throw std::runtime_error("Recheck selection!");\
+
+  PASSLEPTONSELECTION(Muon)
+  PASSLEPTONSELECTION(Electron)
+
+  bool eventPass = MuonPass || ElectronPass;
+  if (eventPass) FILLHISTOS(DiLepton)
+
+  // std::vector< Jet > my_unsorted_jets = *event.topjets;
+  // event.set(unsorted_jets, std::move(my_unsorted_jets));
+  // sort_topjet_by_dilepdist(event);
+
+  eventPass = XOR(MuonPass,ElectronPass);
+  if (!eventPass) return false;
+  FILLHISTOS(eventSel)
+  return true;
+}
+
+// as we want to run the ExampleCycleNew directly with AnalysisModuleRunner,
+// make sure the FeasibilityStudyModule is found by class name. This is ensured by this macro:
+UHH2_REGISTER_ANALYSIS_MODULE(FeasibilityStudyModule)

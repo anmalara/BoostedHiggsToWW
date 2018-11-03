@@ -14,50 +14,53 @@ namespace uhh2 {
   */
 
   /////
+  #define DEFINEPtLeptonSelection(Lepton)\
+  class Pt##Lepton##Selection: public Selection {\
+  public:\
+    Pt##Lepton##Selection(float pt_lepton = 5, float min_isolation = 0.2);\
+    virtual bool passes(const Event & event) override;\
+  private:\
+    float pt_lepton, min_isolation;\
+  };\
 
-  class BoostedJetSelection: public Selection {
+  DEFINEPtLeptonSelection(Muon)
+  DEFINEPtLeptonSelection(Electron)
+  /////
+  //
+  // class PtElectronSelection: public Selection {
+  // public:
+  //   PtElectronSelection(float pt_electron = 5, float min_isolation = 0.2);
+  //   virtual bool passes(const Event & event) override;
+  // private:
+  //   float pt_electron, min_isolation;
+  // };
+
+  /////
+  //
+  // class PtMuonSelection: public Selection {
+  // public:
+  //   PtMuonSelection(float pt_muon = 5, float min_isolation = 0.2);
+  //   virtual bool passes(const Event & event) override;
+  // private:
+  //   float pt_muon, min_isolation;
+  // };
+
+  /////
+
+  class LeptonPtIsoSelection: public Selection {
   public:
-    BoostedJetSelection(float pt_min = 300);
+    LeptonPtIsoSelection(float pt_lep = 5, float min_isolation = 0.2, std::string lepton_class = "muon" );
     virtual bool passes(const Event & event) override;
   private:
-    float pt_min;
+    float pt_lep, min_isolation;
+    std::string lepton_class;
   };
 
   /////
 
-  class DijetSelection: public Selection {
+  class DiElectronSelection: public Selection {
   public:
-    DijetSelection(float dphi_min = 2.7f, float third_frac_max = 0.2f);
-    virtual bool passes(const Event & event) override;
-  private:
-    float dphi_min, third_frac_max;
-  };
-
-  /////
-
-  class PtElecSelection: public Selection {
-  public:
-    PtElecSelection(float pt_electron = 5, float min_isolation = 0.2);
-    virtual bool passes(const Event & event) override;
-  private:
-    float pt_electron, min_isolation;
-  };
-
-  /////
-
-  class PtMuonSelection: public Selection {
-  public:
-    PtMuonSelection(float pt_muon = 5, float min_isolation = 0.2);
-    virtual bool passes(const Event & event) override;
-  private:
-    float pt_muon, min_isolation;
-  };
-
-  /////
-
-  class DiElecSelection: public Selection {
-  public:
-    DiElecSelection();
+    DiElectronSelection();
     virtual bool passes(const Event & event) override;
   };
 
@@ -71,17 +74,30 @@ namespace uhh2 {
 
   /////
 
-  class ZSelection: public Selection {
+  class PhiAngularCut: public Selection {
   public:
-    ZSelection();
+    PhiAngularCut(float phi_min = 0, float phi_max = M_PI);
     virtual bool passes(const Event & event) override;
+  private:
+    float phi_min, phi_max;
+  };
+
+
+  /////
+
+  class PhiAngularSelectionElectron: public Selection {
+  public:
+    PhiAngularSelectionElectron(float phi_min = 0, float phi_max = M_PI);
+    virtual bool passes(const Event & event) override;
+  private:
+    float phi_min, phi_max;
   };
 
   /////
 
-  class PhiAngularCut: public Selection {
+  class PhiAngularSelectionMuon: public Selection {
   public:
-    PhiAngularCut(float phi_min = 0, float phi_max = M_PI);
+    PhiAngularSelectionMuon(float phi_min = 0, float phi_max = M_PI);
     virtual bool passes(const Event & event) override;
   private:
     float phi_min, phi_max;

@@ -10,9 +10,9 @@ bool XOR( bool a, bool b);
 
 //================================================================================
 
-class TopJetLeptonOverlapRemoval: public uhh2::AnalysisModule {
+class JetLeptonOverlapRemoval: public uhh2::AnalysisModule {
 public:
-   explicit TopJetLeptonOverlapRemoval(double deltaRmin);
+   explicit JetLeptonOverlapRemoval(double deltaRmin);
    virtual bool process(uhh2::Event & event) override;
 
 private:
@@ -21,9 +21,9 @@ private:
 
 //================================================================================
 
-class GenTopJetLeptonOverlapRemoval: public uhh2::AnalysisModule {
+class GenJetLeptonOverlapRemoval: public uhh2::AnalysisModule {
 public:
-   explicit GenTopJetLeptonOverlapRemoval(double deltaRmin);
+   explicit GenJetLeptonOverlapRemoval(double deltaRmin);
    virtual bool process(uhh2::Event & event) override;
 
 private:
@@ -32,7 +32,7 @@ private:
 
 //================================================================================
 
-void sort_topjet_H(std::vector<TopJet> & jets, GenParticle H);
-void sort_gentopjet_H(std::vector<GenTopJet> & jets, GenParticle H);
-void sort_topjet(std::vector<TopJet> & jets, auto diLep);
-void sort_topjet_by_dilepdist(uhh2::Event & event);
+void sort_jet_H(std::vector<Jet> & jets, GenParticle H);
+void sort_genjet_H(std::vector<Particle> & jets, GenParticle H);
+template<typename T> void sort_myjet(std::vector<T> & jets, auto diLep);
+void sort_jet_by_dilepdist(uhh2::Event & event);

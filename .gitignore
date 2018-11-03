@@ -9,7 +9,10 @@ core/python/__init__.py
 *~
 *.local
 **/file/**
+**/*.pyc
 
 **jobTempOutput_**/**
 
 ToDo.md
+config/SubmittedJobs*
+Analysis/DeepWWTagger

@@ -1,27 +1,42 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE JobConfiguration PUBLIC "" "JobConfig.dtd"[
-<!ENTITY NEVT_Data                      "-1">
 
-<!ENTITY NEVT_signal				            "-1">
-<!ENTITY NEVT_DYJetsToLL_Pt-250To400		"1000000">
-<!ENTITY NEVT_ZZ				                "-1">
-<!ENTITY NEVT_ZW				                "-1">
-<!ENTITY NEVT_TT				                "-1">
+<!-- Generic Value -->
+<!ENTITY CACHEABLE                  "False">
+<!ENTITY OUTDIR                     "/nfs/dust/cms/user/amalara/sframe_all/FeasibilityStudy">
+<!ENTITY NEVT                       "-1">
 
-<!ENTITY OUTDIR 				"./file/outputfile/feasibilitystudy/MC/">
+<!-- MC PuReweighting -->
+<!ENTITY SYSTYPE_PU                 "central">    <!-- central, up, down -->
+<!ENTITY PILEUP_DIRECTORY           "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/data/MyMCPileupHistogram.root">
+<!ENTITY PILEUP_DIRECTORY_DATA      "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/data/MyDataPileupHistogram.root">
+<!ENTITY PILEUP_DIRECTORY_DATA_UP   "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/data/MyDataPileupHistogram_72383.root">
+<!ENTITY PILEUP_DIRECTORY_DATA_DOWN "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/data/MyDataPileupHistogram_66017.root">
 
-<!ENTITY MC_HZ_HiggsToWWZToLL       SYSTEM  "./xmlfile/HZ_HiggsToWWZToLL_Pythia8_TuneCP5.xml">
-<!ENTITY MC_HZJ_HToWW_ZTo2L         SYSTEM  "./xmlfile/HZJ_HToWW_ZTo2L_M125_13TeV_powheg_pythia8.xml">
-<!ENTITY MC_DYJetsToLL_Pt-250To400  SYSTEM  "./xmlfile/DYJetsToLL_Pt-250To400_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8.xml">
-<!ENTITY MC_ZZ                      SYSTEM  "./xmlfile/ZZ_TuneCUETP8M1_13TeV-pythia8.xml">
-<!ENTITY MC_ZW                      SYSTEM  "./xmlfile/WZ_TuneCUETP8M1_13TeV-pythia8.xml">
-<!ENTITY MC_TT                      SYSTEM  "./xmlfile/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8.xml">
-<!ENTITY Data_2017C                 SYSTEM  "./xmlfile/Run2017C-PromptReco-v1.xml">
+<!-- Systematic uncertainties -->
+<!ENTITY JERSMEAR_DIRECTION         "nominal">  <!--nominal/down/up -->
+<!ENTITY JECSMEAR_DIRECTION         "nominal">  <!--nominal/down/up -->
+
+<!-- MC Samples -->
+<!ENTITY MC_DY1JetsToLL             SYSTEM  "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v1_woHOTVR_woXCONE/MC_DY1JetsToLL_M-50.xml">
+<!ENTITY MC_DY2JetsToLL             SYSTEM  "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v1_woHOTVR_woXCONE/MC_DY2JetsToLL_M-50.xml">
+<!ENTITY MC_DY3JetsToLL             SYSTEM  "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v1_woHOTVR_woXCONE/MC_DY3JetsToLL_M-50.xml">
+<!ENTITY MC_DY4JetsToLL             SYSTEM  "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v1_woHOTVR_woXCONE/MC_DY4JetsToLL_M-50.xml">
+<!ENTITY MC_TTbarSemiLeptonic       SYSTEM  "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v1_woHOTVR_woXCONE/MC_TTbarSemiLeptonic.xml">
+<!ENTITY MC_TTTo2L2Nu               SYSTEM  "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v1_woHOTVR_woXCONE/MC_TTTo2L2Nu.xml">
+<!ENTITY MC_TTToHadronic            SYSTEM  "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v1_woHOTVR_woXCONE/MC_TTToHadronic.xml">
+
+<!ENTITY MC_WZ                      SYSTEM  "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_80X_v3_EGReg/WZ_EGReg.xml">
+<!ENTITY MC_ZZ                      SYSTEM  "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_80X_v3_EGReg/ZZ_EGReg.xml">
+<!ENTITY MC_HZ_HiggsToWWZToLL       SYSTEM  "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/BoostedHiggsToWW/config/xmlfile/HZ_HiggsToWWZToLL_Pythia8_TuneCP5.xml">
+<!-- Data Samples -->
+<!ENTITY Data_2017C                 SYSTEM  "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/BoostedHiggsToWW/config/xmlfile/SingleMu_C_2_1_18.xml">
+
 ]>
 
 <!--
-<ConfigParse NEventsBreak="0" LastBreak="0" FileSplit="10" />
-<ConfigSGE RAM ="2" DISK ="2" Mail="andrea.malara@desy.de" Notification="as" Workdir="./file/outputfile/feasibilitystudy/MC"/>
+<ConfigParse NEventsBreak="0" FileSplit="100" AutoResubmit="5"/>
+<ConfigSGE RAM ="4" DISK ="2" Mail="andrea.malara@desy.de" Notification="as" Workdir="workdir_FeasibilityStudy"/>
 -->
 
 <!-- OutputLevel controls which messages are printed; set to VERBOSE or DEBUG for more verbosity, to WARNING or ERROR for less -->
@@ -29,26 +44,38 @@
   <Library Name="libSUHH2BoostedHiggsToWW"/>
   <Package Name="SUHH2BoostedHiggsToWW.par" />
 
-  <Cycle Name="uhh2::AnalysisModuleRunner" OutputDirectory="&OUTDIR;" PostFix="" TargetLumi="1" >
+  <Cycle Name="uhh2::AnalysisModuleRunner" OutputDirectory="&OUTDIR;/" PostFix="" TargetLumi="1" >
 
-    <InputData Type="MC" Version="signal" Lumi="0.752" NEventsMax="&NEVT_signal;" Cacheable="False">                                      &MC_HZJ_HToWW_ZTo2L;        <InputTree Name="AnalysisTree"/> <OutputTree Name="AnalysisTree"/> </InputData>
-    <InputData Type="MC" Version="bkg_ZZ" Lumi="10.32" NEventsMax="&NEVT_ZZ;" Cacheable="False">                                          &MC_ZZ;                     <InputTree Name="AnalysisTree"/> <OutputTree Name="AnalysisTree"/> </InputData>
-    <InputData Type="MC" Version="bkg_ZW" Lumi="22.82" NEventsMax="&NEVT_ZW;" Cacheable="False">                                          &MC_ZW;                     <InputTree Name="AnalysisTree"/> <OutputTree Name="AnalysisTree"/> </InputData>
-    <InputData Type="MC" Version="bkg_TT" Lumi="832" NEventsMax="&NEVT_TT;" Cacheable="False">                                            &MC_TT;                     <InputTree Name="AnalysisTree"/> <OutputTree Name="AnalysisTree"/> </InputData>
-    <InputData Type="MC" Version="bkg_DYJetsToLL_Pt-250To400" Lumi="2.991" NEventsMax="&NEVT_DYJetsToLL_Pt-250To400;" Cacheable="False">  &MC_DYJetsToLL_Pt-250To400; <InputTree Name="AnalysisTree"/> <OutputTree Name="AnalysisTree"/> </InputData>
+    <!-- MC -->
+    <InputData Type="MC"    Version="MC_DY1JetsToLL"            Lumi="37342.76571"  NEventsMax="&NEVT;" Cacheable="&CACHEABLE;">  &MC_DY1JetsToLL;        <InputTree Name="AnalysisTree"/> <OutputTree Name="AnalysisTree"/> </InputData>
+    <InputData Type="MC"    Version="MC_DY2JetsToLL"            Lumi="38016.12332"  NEventsMax="&NEVT;" Cacheable="&CACHEABLE;">  &MC_DY2JetsToLL;        <InputTree Name="AnalysisTree"/> <OutputTree Name="AnalysisTree"/> </InputData>
+    <InputData Type="MC"    Version="MC_DY3JetsToLL"            Lumi="39815.75251"  NEventsMax="&NEVT;" Cacheable="&CACHEABLE;">  &MC_DY3JetsToLL;        <InputTree Name="AnalysisTree"/> <OutputTree Name="AnalysisTree"/> </InputData>
+    <InputData Type="MC"    Version="MC_DY4JetsToLL"            Lumi="106999.6291"  NEventsMax="&NEVT;" Cacheable="&CACHEABLE;">  &MC_DY4JetsToLL;        <InputTree Name="AnalysisTree"/> <OutputTree Name="AnalysisTree"/> </InputData>
+    <InputData Type="MC"    Version="MC_TTbarSemiLeptonic"      Lumi="91335604.46"  NEventsMax="&NEVT;" Cacheable="&CACHEABLE;">  &MC_TTbarSemiLeptonic;  <InputTree Name="AnalysisTree"/> <OutputTree Name="AnalysisTree"/> </InputData>
+    <InputData Type="MC"    Version="MC_TTTo2L2Nu"              Lumi="56758143.39"  NEventsMax="&NEVT;" Cacheable="&CACHEABLE;">  &MC_TTTo2L2Nu;          <InputTree Name="AnalysisTree"/> <OutputTree Name="AnalysisTree"/> </InputData>
+    <InputData Type="MC"    Version="MC_TTToHadronic"           Lumi="100683950.1"  NEventsMax="&NEVT;" Cacheable="&CACHEABLE;">  &MC_TTToHadronic;       <InputTree Name="AnalysisTree"/> <OutputTree Name="AnalysisTree"/> </InputData>
+
+    <InputData Type="MC"    Version="MC_WZ"                     Lumi="21005.792"    NEventsMax="&NEVT;" Cacheable="&CACHEABLE;">  &MC_WZ;                 <InputTree Name="AnalysisTree"/> <OutputTree Name="AnalysisTree"/> </InputData>
+    <InputData Type="MC"    Version="MC_ZZ"                     Lumi="60107.365"    NEventsMax="&NEVT;" Cacheable="&CACHEABLE;">  &MC_ZZ;                 <InputTree Name="AnalysisTree"/> <OutputTree Name="AnalysisTree"/> </InputData>
+
+    <InputData Type="MC"    Version="MC_HZ_HiggsToWWZToLL"      Lumi="365384615.38" NEventsMax="&NEVT;" Cacheable="&CACHEABLE;">  &MC_HZ_HiggsToWWZToLL;  <InputTree Name="AnalysisTree"/> <OutputTree Name="AnalysisTree"/> </InputData>
+
+    <!-- Data -->
+    <InputData Type="DATA"  Version="Data_2017C"                Lumi="1"            NEventsMax="&NEVT;" Cacheable="&CACHEABLE;">  &Data_2017C;            <InputTree Name="AnalysisTree"/> <OutputTree Name="AnalysisTree"/> </InputData>
 
 
     <UserConfig>
       <!-- define which collections to read from the input. Only specify what you need to save I/O time -->
-      <Item Name="PrimaryVertexCollection" Value="offlineSlimmedPrimaryVertices" />
-      <Item Name="ElectronCollection" Value="slimmedElectronsUSER" />
-      <Item Name="MuonCollection" Value="slimmedMuonsUSER" />
-      <Item Name="TauCollection" Value="slimmedTaus" />
-      <Item Name="JetCollection" Value="slimmedJets" />
-      <Item Name="METName" Value="slimmedMETs" />
-      <Item Name="TopJetCollection" Value="slimmedJetsAK8_SoftDrop" />
-      <Item Name="GenParticleCollection" Value="GenParticles" />
-      <Item Name="GenJetCollection" Value="slimmedGenJets" />
+      <Item Name="PrimaryVertexCollection"    Value="offlineSlimmedPrimaryVertices" />
+      <Item Name="ElectronCollection"         Value="slimmedElectronsUSER" />
+      <Item Name="MuonCollection"             Value="slimmedMuonsUSER" />
+      <Item Name="TauCollection"              Value="slimmedTaus" />
+      <Item Name="JetCollection"              Value="slimmedJets" /> <!-- slimmedJetsAK8_SoftDrop, slimmedJets -->
+      <Item Name="METName"                    Value="slimmedMETs" />
+      <Item Name="GenInfoName"                Value="genInfo" />
+			<Item Name="GenParticleCollection"      Value="GenParticles" />
+      <Item Name="GenJetCollection"           Value="slimmedGenJetsAK8" />
+      <Item Name="TopJetCollection"           Value="packedPatJetsAk8CHSJets_SoftDropCHS" />  <!-- slimmedJetsAK8_SoftDrop -->
       <!-- The list of available collections to read in corresponds to the pointer members in event. The 'Name's to use here in the configuration are:
 
       PrimaryVertexCollection
@@ -74,20 +101,30 @@
       <Item Name="readTrigger" Value="false" />
     -->
     <Item Name="readTrigger" Value="false" />
-
-    <!-- the class name of the AnalysisModule subclasses to run: -->
-    <Item Name="AnalysisModule" Value="FeasibilityStudyModule" />
+    <Item Name="trigger" Value="HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_v*" />
 
     <!-- tell AnalysisModuleRunner NOT to use the MC event weight from SFrame; rather let
     MCLumiWeight (called via CommonModules) calculate the MC event weight. The MC
     event weight assigned by MCLumiWeight is InputData.Lumi / Cycle.TargetLumi. -->
-    <Item Name="use_sframe_weight" Value="false" />
+    <Item Name="use_sframe_weight"          Value="false"/>
 
-    <!-- configuration for MCPileupReweight (run as part of CommonModules): -->
-    <Item Name="pileup_directory" Value="" />
+    <Item Name="lumi_file"                  Value="/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/data/Cert_294927-306462_13TeV_EOY2017ReReco_Collisions17_JSON_v1_normTag.root"/>
+    <Item Name="lumihists_lumi_per_bin"     Value="500."/> <!-- used in UHH2/common/include/LuminosityHists.h -->
 
-    <!-- Some test configuration; see FeasibilityStudyModule.cxx for how to access it: -->
-    <Item Name="TestKey" Value="TestKeyValue" />
+    <!-- Systematic uncertainties -->
+    <Item Name="jersmear_direction"         Value="&JERSMEAR_DIRECTION;"/>  <!--used only in UHH2/common/include/JetCorrections.cxx -->
+    <Item Name="jecsmear_direction"         Value="&JECSMEAR_DIRECTION;"/>  <!--used only in UHH2/common/include/JetCorrections.cxx -->
+
+    <!-- MC PuReweighting -->
+    <Item Name="SysType_PU"                 Value="&SYSTYPE_PU;"/>
+    <Item Name="pileup_directory"           Value="&PILEUP_DIRECTORY;"/>            <!--used only in UHH2/common/include/MCWeight.h -->
+    <Item Name="pileup_directory_data"      Value="&PILEUP_DIRECTORY_DATA;"/>       <!--used only in UHH2/common/include/MCWeight.h -->
+    <Item Name="pileup_directory_data_up"   Value="&PILEUP_DIRECTORY_DATA_UP;"/>    <!--used only in UHH2/common/include/MCWeight.h -->
+    <Item Name="pileup_directory_data_down" Value="&PILEUP_DIRECTORY_DATA_DOWN;"/>  <!--used only in UHH2/common/include/MCWeight.h -->
+
+    <!-- the class name of the AnalysisModule subclasses to run: -->
+    <Item Name="AnalysisModule"             Value="FeasibilityStudyModule" />
+
   </UserConfig>
 </Cycle>
 </JobConfiguration>
