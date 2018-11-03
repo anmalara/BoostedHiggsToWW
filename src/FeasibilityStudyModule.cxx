@@ -131,7 +131,7 @@ FeasibilityStudyModule::FeasibilityStudyModule(Context & ctx){
   #define SETLEPTONSELECTION(Lepton)\
   N##Lepton##Sel.reset(new N##Lepton##Selection(2));\
   SETHISTOS(N##Lepton)\
-  Pt##Lepton##Sel.reset(new Pt##Lepton##Selection(30, 0.2));\
+  Pt##Lepton##Sel.reset(new Lepton##PtIsoSelection(30, 0.2));\
   SETHISTOS(Pt##Lepton)\
   Di##Lepton##Sel.reset(new Di##Lepton##Selection());\
   SETHISTOS(Di##Lepton)\
@@ -145,7 +145,7 @@ FeasibilityStudyModule::FeasibilityStudyModule(Context & ctx){
   Lepton##Sel->add(name_temp, Di##Lepton##Sel);\
   Lepton##Sel->add("nboostedjet >=2 ", NBoostedJetSel);\
   SETHISTOS(Jet##Lepton)\
-  PhiAngularSel##Lepton.reset(new PhiAngularSelection##Lepton(2.7));\
+  PhiAngularSel##Lepton.reset(new Jet##Lepton##PhiAngularSelection(2.7));\
   SETHISTOS(PhiAngularSel##Lepton)\
   Lepton##Sel->add("#Delta#phi(jet,dilep) >2.7", PhiAngularSel##Lepton);\
 

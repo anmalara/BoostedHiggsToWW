@@ -14,94 +14,42 @@ namespace uhh2 {
   */
 
   /////
-  #define DEFINEPtLeptonSelection(Lepton)\
-  class Pt##Lepton##Selection: public Selection {\
+  #define DEFINELeptonPtIsoSelection(Lepton)\
+  class Lepton##PtIsoSelection: public Selection {\
   public:\
-    Pt##Lepton##Selection(float pt_lepton = 5, float min_isolation = 0.2);\
+    Lepton##PtIsoSelection(float pt_lepton = 5, float min_isolation = 0.2);\
     virtual bool passes(const Event & event) override;\
   private:\
     float pt_lepton, min_isolation;\
   };\
 
-  DEFINEPtLeptonSelection(Muon)
-  DEFINEPtLeptonSelection(Electron)
-  /////
-  //
-  // class PtElectronSelection: public Selection {
-  // public:
-  //   PtElectronSelection(float pt_electron = 5, float min_isolation = 0.2);
-  //   virtual bool passes(const Event & event) override;
-  // private:
-  //   float pt_electron, min_isolation;
-  // };
-
-  /////
-  //
-  // class PtMuonSelection: public Selection {
-  // public:
-  //   PtMuonSelection(float pt_muon = 5, float min_isolation = 0.2);
-  //   virtual bool passes(const Event & event) override;
-  // private:
-  //   float pt_muon, min_isolation;
-  // };
+  DEFINELeptonPtIsoSelection(Muon)
+  DEFINELeptonPtIsoSelection(Electron)
 
   /////
 
-  class LeptonPtIsoSelection: public Selection {
-  public:
-    LeptonPtIsoSelection(float pt_lep = 5, float min_isolation = 0.2, std::string lepton_class = "muon" );
-    virtual bool passes(const Event & event) override;
-  private:
-    float pt_lep, min_isolation;
-    std::string lepton_class;
-  };
+  #define  DEFINEDiLeptonSelection(Lepton)\
+  class Di##Lepton##Selection: public Selection {\
+  public:\
+    Di##Lepton##Selection();\
+    virtual bool passes(const Event & event) override;\
+  };\
+
+  DEFINEDiLeptonSelection(Muon)
+  DEFINEDiLeptonSelection(Electron)
 
   /////
 
-  class DiElectronSelection: public Selection {
-  public:
-    DiElectronSelection();
-    virtual bool passes(const Event & event) override;
-  };
+  #define DEFINEJetLeptonPhiAngularSelection(Lepton)\
+  class Jet##Lepton##PhiAngularSelection: public Selection {\
+  public:\
+    Jet##Lepton##PhiAngularSelection(float phi_min = 0, float phi_max = M_PI);\
+    virtual bool passes(const Event & event) override;\
+  private:\
+    float phi_min, phi_max;\
+  };\
 
-  /////
-
-  class DiMuonSelection: public Selection {
-  public:
-    DiMuonSelection();
-    virtual bool passes(const Event & event) override;
-  };
-
-  /////
-
-  class PhiAngularCut: public Selection {
-  public:
-    PhiAngularCut(float phi_min = 0, float phi_max = M_PI);
-    virtual bool passes(const Event & event) override;
-  private:
-    float phi_min, phi_max;
-  };
-
-
-  /////
-
-  class PhiAngularSelectionElectron: public Selection {
-  public:
-    PhiAngularSelectionElectron(float phi_min = 0, float phi_max = M_PI);
-    virtual bool passes(const Event & event) override;
-  private:
-    float phi_min, phi_max;
-  };
-
-  /////
-
-  class PhiAngularSelectionMuon: public Selection {
-  public:
-    PhiAngularSelectionMuon(float phi_min = 0, float phi_max = M_PI);
-    virtual bool passes(const Event & event) override;
-  private:
-    float phi_min, phi_max;
-  };
-
+  DEFINEJetLeptonPhiAngularSelection(Muon)
+  DEFINEJetLeptonPhiAngularSelection(Electron)
 
 }
