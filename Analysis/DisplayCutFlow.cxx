@@ -14,65 +14,65 @@
 #include "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/PersonalCode/tdrstyle_all.C"
 
 TCanvas* overlaphistos(std::map<TString,TH1*> histos, TH1* histo_data, std::vector<TString> names,TString name, std::map<TString,double> options);
-TH1F* CutFlow(TString file_name, std::vector<TString> name_dir, TString name = "histo_cut");
-void MergeHistos(std::map<TString,TH1*> & histos, std::vector<TString> names, TString name);
+TH1F* CutFlow(TString file_name, std::vector<TString> name_subdirs, TString name);
+void MergeHistos(std::map<TString,TH1*>& histos_cuts, std::map<std::pair<TString,TString>,TH1*>& histos_vars, std::vector<TString> name_vars, std::vector<TString> names, TString name);
+void LoadVariables(TString name_var, TString bkg, std::vector<TString> name_subdirs, std::map<TString,TH1*>& histos_cuts, std::map<std::pair<TString,TString>,TH1*>& histos_vars, TString inputdir);
+void DisplayPlots(std::vector<TString> name_vars, std::vector<TString> name_samples, std::vector<TString> name_subdirs, TString inputdir, TString outdir);
 
-void LoadVariables(TString bkg, std::vector<TString> name_dir, std::map<TString,TH1*> & histos_cuts, std::map<TString,TH1*> & histos_SD1) {
-  TString inputdir = "/nfs/dust/cms/user/amalara/sframe_all/FeasibilityStudy_MC/";
-  TString file_name = inputdir+"uhh2.AnalysisModuleRunner.MC.MC_"; file_name += bkg; file_name += ".root";
-  TH1F* histo_cut = CutFlow(file_name, name_dir, bkg);
-  histo_cut->SetName(bkg);
-  histos_cuts[bkg] = histo_cut;
+void DisplayCutFlow(){
+  std::vector<TString> channels = {"muonchannel", "electronchannel"};
+  for(auto channel : channels) {
+    std::cout << channel << '\n';
+    TString outdir = "/nfs/dust/cms/user/amalara/WorkingArea/File/Analysis/plot/"+channel+"/";
+    // TString inputdir = "/nfs/dust/cms/user/amalara/sframe_all/FeasibilityStudy_MC/muonchannel/";
+    TString inputdir = "/nfs/dust/cms/user/amalara/sframe_all/FeasibilityStudy_MC/"+channel+"/";
+    // std::vector<TString> name_vars = {"nJet_JetDiLeptonPhiAngular/SDmass_jet1", "diLepton_JetDiLeptonPhiAngular/diMuon_DR12", "diLepton_JetDiLeptonPhiAngular/diElectron_DR12"};
 
-  TFile *file = new TFile(file_name);
-  TH1F* histo_tot = (TH1F*)file  ->Get("nJet_cleaned/numbers");
-  TH1F* histo = (TH1F*)file  ->Get("nJet_DiLepton/SDmass_jet1");
-  histos_SD1[bkg] = histo;
+    std::vector<TString> name_vars = {"nTopJet_JetDiLeptonPhiAngular/SDmass_1", "diLepton_JetDiLeptonPhiAngular/diMuon_DR12", "diLepton_JetDiLeptonPhiAngular/diElectron_DR12"};
+
+    std::vector<TString> name_subdirs = {"cleaned", "Veto", "NBoostedJetLepton", "NLeptonSel", "JetDiLeptonPhiAngular"};
+    std::vector<TString> name_samples = {"HZ_HiggsToWWZToLL", "DY1JetsToLL", "DY2JetsToLL", "DY3JetsToLL", "DY4JetsToLL", "TTToHadronic", "TTbarSemiLeptonic", "TTTo2L2Nu", "WZ", "ZZ"};
+    DisplayPlots( name_vars, name_samples, name_subdirs, inputdir, outdir);
+  }
 }
 
-void DisplayCutFlow(TString outdir = "/nfs/dust/cms/user/amalara/sframe_all/FeasibilityStudy_MC/", bool quick = true) {
+void DisplayPlots(std::vector<TString> name_vars, std::vector<TString> name_samples, std::vector<TString> name_subdirs, TString inputdir, TString outdir) {
 
-  std::map<TString,TH1*> histos_cuts, histos_SD1;
-  std::vector<TString> name_dir = {"cleaned", "NBoostedJetSel", "NMuon", "NElectron", "PtMuon", "PtElectron", "DiMuon", "DiElectron", "JetMuon", "JetElectron", "PhiAngularSelMuon", "PhiAngularSelElectron", "eventSel","DiLepton"};
+  std::map<TString,TH1*> histos_cuts;
+  std::map<std::pair<TString,TString>,TH1*> histos_vars;
 
-  LoadVariables("HZ_HiggsToWWZToLL", name_dir, histos_cuts,histos_SD1);
-  LoadVariables("DY1JetsToLL", name_dir, histos_cuts,histos_SD1);
-  LoadVariables("DY2JetsToLL", name_dir, histos_cuts,histos_SD1);
-  LoadVariables("DY3JetsToLL", name_dir, histos_cuts,histos_SD1);
-  LoadVariables("DY4JetsToLL", name_dir, histos_cuts,histos_SD1);
-  LoadVariables("TTToHadronic", name_dir, histos_cuts,histos_SD1);
-  LoadVariables("TTbarSemiLeptonic", name_dir, histos_cuts,histos_SD1);
-  LoadVariables("TTTo2L2Nu", name_dir, histos_cuts,histos_SD1);
-  LoadVariables("WZ", name_dir, histos_cuts,histos_SD1);
-  LoadVariables("ZZ", name_dir, histos_cuts,histos_SD1);
+  for(auto name_var : name_vars) {
+    for(auto sample : name_samples) {
+      LoadVariables(name_var, sample, name_subdirs, histos_cuts,histos_vars, inputdir);
+    }
+  }
 
+  // for (std::map<std::pair<TString,TString>,TH1*>::iterator it=histos_vars.begin(); it!=histos_vars.end(); ++it)
+  //  std::cout << it->first.first << " " << it->first.second << " => " << it->second << '\n';
 
   std::vector<TString> names = {"HZ_HiggsToWWZToLL"};
-  MergeHistos(histos_cuts, names, "HWW");
-  MergeHistos(histos_SD1, names, "HWW");
+  MergeHistos(histos_cuts, histos_vars, name_vars, names, "HWW");
   names = {"WZ"};
-  MergeHistos(histos_cuts, names, "WZ");
-  MergeHistos(histos_SD1, names, "WZ");
+  MergeHistos(histos_cuts, histos_vars, name_vars, names, "WZ");
   names = {"ZZ"};
-  MergeHistos(histos_cuts, names, "ZZ");
-  MergeHistos(histos_SD1, names, "ZZ");
+  MergeHistos(histos_cuts, histos_vars, name_vars, names, "ZZ");
   names = {"TTToHadronic","TTbarSemiLeptonic","TTTo2L2Nu"};
-  MergeHistos(histos_cuts, names, "TT");
-  MergeHistos(histos_SD1, names, "TT");
+  MergeHistos(histos_cuts, histos_vars, name_vars, names, "TT");
   names.clear();
   names = {"DY1JetsToLL","DY2JetsToLL","DY3JetsToLL","DY4JetsToLL"};
-  MergeHistos(histos_cuts, names, "DY");
-  MergeHistos(histos_SD1, names, "DY");
+  MergeHistos(histos_cuts, histos_vars, name_vars, names, "DY");
   names.clear();
   // names = {"HZ_HiggsToWWZToLL","DY1JetsToLL","TTToHadronic","TTbarSemiLeptonic","TTTo2L2Nu","WZ","ZZ"};
-  names = {"HWW","DY","TT", "WZ", "ZZ" };
+  // names = {"HWW","DY","TT", "WZ", "ZZ" };
+  names = {"HWW","DY","TT" };
 
 
-  std::map<TString,double> options = { {"rangemin",1e-7}, {"rangemax",1e5}, {"drawoption", 1 }, {"rebin",1}, {"name",1} } ;
-  TCanvas* c_cutflow = overlaphistos(histos_cuts, NULL, names, "CutFlow", options);
+  std::map<TString,double> options = { {"rangemin",1e-10}, {"rangemax",1e5}, {"drawoption", 1 }, {"rebin",1}, {"name",1} } ;
+  TCanvas* c_cutflow;
+  c_cutflow = overlaphistos(histos_cuts, NULL, names, "CutFlow", options);
   c_cutflow->SetLogy();
-  // c_cutflow->SaveAs((outdir+"cutflow.png").c_str());
-  // c_cutflow->SaveAs((outdir+"cutflow.pdf").c_str());
+  c_cutflow->SaveAs(outdir+"cutflow.png");
+  c_cutflow->SaveAs(outdir+"cutflow.pdf");
 
 
   options["rangemin"] = 1e-10;
@@ -80,8 +80,16 @@ void DisplayCutFlow(TString outdir = "/nfs/dust/cms/user/amalara/sframe_all/Feas
   options["drawoption"] = 0;
   options["rebin"] = 4;
   // TCanvas* c = tdrCanvas("SDmass", 0, 200, 1e-10, 1E2, "SDmass_jet1" , "Events");
-  TCanvas* c = overlaphistos(histos_SD1, NULL, names, "SDmass_jet1", options);
-  c->SetLogy(1);
+  for(auto name_var : name_vars) {
+    TString name = name_var(name_var.First("/")+1,name_var.Length());
+    std::map<TString,TH1*> histos_vars_plot;
+    for(auto sample : names) histos_vars_plot[sample] = histos_vars[make_pair(name_var, sample)];
+    TCanvas* c = overlaphistos(histos_vars_plot, NULL, names, name, options);
+    c->SetLogy(1);
+    std::cout << name << '\n';
+    c->SaveAs(outdir+name+".png");
+    c->SaveAs(outdir+name+".pdf");
+  }
 
 
 
@@ -138,34 +146,55 @@ TCanvas* overlaphistos(std::map<TString,TH1*> histos, TH1* histo_data, std::vect
 
 
 
-  TH1F* CutFlow(TString file_name, std::vector<TString> name_dir, TString name = "histo_cut") {
+  TH1F* CutFlow(TString file_name, std::vector<TString> name_subdirs, TString name) {
     std::vector<TH1F*> histos;
     TFile *file = new TFile(file_name);
-    for (int i = 0; i < name_dir.size(); i++) {
+    for (int i = 0; i < name_subdirs.size(); i++) {
       TString folder;
-      if (name_dir[i].Contains("Jet") )folder = "nJet_";
-      else if (name_dir[i].Contains("Muon") )folder = "muon_";
-      else if (name_dir[i].Contains("Electron") ) folder = "ele_";
+      if (name_subdirs[i].Contains("Jet") )folder = "nJet_";
+      else if (name_subdirs[i].Contains("Muon") )folder = "muon_";
+      else if (name_subdirs[i].Contains("Electron") ) folder = "ele_";
       else folder = "nJet_";
-      histos.push_back((TH1F*)file->Get(folder+name_dir[i]+"/number"));
+      histos.push_back((TH1F*)file->Get(folder+name_subdirs[i]+"/number"));
     }
 
-    TH1F* histo_cut = new TH1F(name,name, name_dir.size(), 0, name_dir.size());
-    for (int i = 0; i < name_dir.size(); i++) {
+    TH1F* histo_cut = new TH1F(name,name, name_subdirs.size(), 0, name_subdirs.size());
+    for (int i = 0; i < name_subdirs.size(); i++) {
       histo_cut->SetBinContent(histo_cut->FindBin(i), histos[i]->GetSumOfWeights());
-      histo_cut->GetXaxis()->SetBinLabel(i+1,name_dir[i]);
+      histo_cut->GetXaxis()->SetBinLabel(i+1,name_subdirs[i]);
     }
 
     return histo_cut;
   }
 
-  void MergeHistos(std::map<TString,TH1*> & histos, std::vector<TString> names, TString name) {
+  void MergeHistos(std::map<TString,TH1*>& histos_cuts, std::map<std::pair<TString,TString>,TH1*>& histos_vars, std::vector<TString> name_vars, std::vector<TString> bkgs, TString name) {
     bool first = true;
-    TH1F* histo;
-    for (auto entry : histos) {
-      if(std::find(names.begin(), names.end(), entry.first) == names.end()) continue;
-      if (first) {histo = (TH1F*)entry.second->Clone(name); first = false;}
-      else histo->Add(entry.second);
+    TH1F* histo_cut;
+    std::map<TString, TH1F*> histo_var;
+    for (auto bkg : bkgs) {
+      if (first) {
+        first = false;
+        histo_cut = (TH1F*)histos_cuts[bkg]->Clone(name);
+        for (auto name_var : name_vars) histo_var[name_var] = (TH1F*) histos_vars[make_pair(name_var,bkg)]->Clone(name);
+      }
+      else {
+        histo_cut->Add(histos_cuts[bkg]);
+        for (auto name_var : name_vars) histo_var[name_var]->Add(histos_vars[make_pair(name_var,bkg)]);
+      }
     }
-    histos[name] = histo;
+    histos_cuts[name] = histo_cut;
+    for (auto name_var : name_vars) histos_vars[make_pair(name_var,name)] = histo_var[name_var];
+
+  }
+
+  void LoadVariables(TString name_var, TString bkg, std::vector<TString> name_subdirs, std::map<TString,TH1*> & histos_cuts, std::map<std::pair<TString,TString>,TH1*> & histos_vars, TString inputdir) {
+    TString file_name = inputdir+"uhh2.AnalysisModuleRunner.MC.MC_"; file_name += bkg; file_name += ".root";
+    TH1F* histo_cut = CutFlow(file_name, name_subdirs, bkg);
+    histo_cut->SetName(bkg);
+    histos_cuts[bkg] = histo_cut;
+
+    TFile *file = new TFile(file_name);
+    TH1F* histo = (TH1F*)file  ->Get(name_var);
+    // histos_vars[bkg] = histo;
+    histos_vars[make_pair(name_var,bkg)] = histo;
   }

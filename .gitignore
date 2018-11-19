@@ -5,7 +5,9 @@
 */tmp
 core/python/*.pyc
 core/python/__init__.py
-*.root
+**/*.root
+**/*.pdf
+**/*.png
 *~
 *.local
 **/file/**

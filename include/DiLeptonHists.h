@@ -1,6 +1,7 @@
 #pragma once
 
 #include "UHH2/core/include/Hists.h"
+#include "UHH2/BoostedHiggsToWW/include/constants.hpp"
 
 /**  \brief Example class for booking and filling histograms
 *
@@ -22,7 +23,7 @@ private:
 	TH1F *dilep_number;
 
 	#define DEFINEDILEPTONHISTOS(lepton)\
-	TH1F *di##lepton##_number, *di##lepton##_charge, *di##lepton##_m, *di##lepton##_pt, *di##lepton##_eta, *di##lepton##_phi, *di##lepton##_deltaR;\
+	TH1F *di##lepton##_number, *di##lepton##_charge, *di##lepton##_m, *di##lepton##_pt, *di##lepton##_eta, *di##lepton##_phi, *di##lepton##_deltaR, *di##lepton##_jet_Dphi;\
 	TH2F *pt_##lepton##_2D;\
 
 	DEFINEDILEPTONHISTOS(Electron)

@@ -5,19 +5,19 @@ from parallelise import *
 from Utils import *
 
 def cont_event(original_dir ="/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/BoostedHiggsToWW/config/SubmittedJobs/"):
-  count = 0
-  for sample in glob(original_dir+"*"):
-    if not ".xml" in sample:
-      continue
-    count += 1
-  return count
+    count = 0
+    for sample in glob(original_dir+"*/*"):
+        if not ".xml" in sample:
+            continue
+        count += 1
+    return count
 
 @timeit
 def condor_control(original_dir ="/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/BoostedHiggsToWW/config/SubmittedJobs/", option=""):
     internal_option= {"list": "-l", "submit": "-s", "resubmit": "-r", "add": "-f", "merge": "-f"}
     count = 0
     all_events = cont_event(original_dir)
-    for el in glob(original_dir+"*"):
+    for el in glob(original_dir+"*/*"):
         if not ".xml" in el:
             continue
         path   = el[:el.rfind("/")+1 ]
@@ -37,48 +37,52 @@ def condor_control(original_dir ="/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94
 
 
 @timeit
-def delete_workdir(original_dir ="/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/BoostedHiggsToWW/config/SubmittedJobs/"):
-  for el in glob(original_dir+"*"):
-      if os.path.isdir(el) and "workdir" in el:
-          cmd = "rm -fr %s" % (el)
-          a = os.system(cmd)
+def delete_workdir(original_dir ="/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/BoostedHiggsToWW/config/SubmittedJobs/", outdir ="/nfs/dust/cms/user/amalara/sframe_all/FeasibilityStudy"):
+    for el in glob(original_dir+"*/*"):
+        if os.path.isdir(el) and "workdir" in el:
+            cmd = "rm -fr %s" % (el)
+            a = os.system(cmd)
+    for el in glob(outdir+"*/*/*"):
+        if os.path.isdir(el) and "workdir" in el:
+            cmd = "rm -fr %s" % (el)
+            a = os.system(cmd)
 
 def local_run(original_dir,option):
-  original_dir_ = os.getcwd()
-  list_processes  = []
-  i = 0
-  for el in glob(original_dir+"*"):
-    if os.path.isdir(el) and "workdir" in el:
-      controls = []
-      with open(el+"/missing_files.txt", "r") as missing_files:
-        lines = missing_files.readlines()
-        if len(lines)==0:
-          continue
-        for line in lines:
-          rootfile = line.split()[0]
-          process = line.split()[1]
-          file = el+"/"+line.split()[2]
-          with open(file, "r") as xml_file:
-            xml_lines = xml_file.readlines()
-            for xml_line in xml_lines:
-              if "ENTITY" in xml_line and "OUTDIR" in xml_line:
-                outdir = xml_line.split()[-1][1:-2]
-          if os.path.isfile(outdir+"/"+rootfile):
-            controls.append([rootfile, process])
-            continue
-          list_processes.append( [process, file] )
-          i += 1
-      comment_lines(el, "/missing_files.txt", controls, remove=True)
-  if option == "check":
-    print len(list_processes)
-    for i in list_processes: print i
-    return len(list_processes)
-  if option == "local":
-    if len(list_processes)<20 or (len(list_processes)*100/cont_event(original_dir)<3 and len(list_processes)<50) :
-      print len(list_processes)
-      parallelise(list_processes, 15)
-    else:
-      condor_control(original_dir, "resubmit")
+    original_dir_ = os.getcwd()
+    list_processes  = []
+    i = 0
+    for el in glob(original_dir+"*/*"):
+        if os.path.isdir(el) and "workdir" in el:
+            controls = []
+            with open(el+"/missing_files.txt", "r") as missing_files:
+                lines = missing_files.readlines()
+                if len(lines)==0:
+                    continue
+                for line in lines:
+                    rootfile = line.split()[0]
+                    process = line.split()[1]
+                    file = el+"/"+line.split()[2]
+                    with open(file, "r") as xml_file:
+                        xml_lines = xml_file.readlines()
+                        for xml_line in xml_lines:
+                            if "ENTITY" in xml_line and "OUTDIR" in xml_line:
+                                outdir = xml_line.split()[-1][1:-2]
+                    if os.path.isfile(outdir+"/"+rootfile):
+                        controls.append([rootfile, process])
+                        continue
+                    list_processes.append( [process, file] )
+                    i += 1
+            comment_lines(el, "/missing_files.txt", controls, remove=True)
+    if option == "check":
+        print len(list_processes)
+        for i in list_processes: print i
+        return len(list_processes)
+    if option == "local":
+        if len(list_processes)<100 or (len(list_processes)*100/cont_event(original_dir)<3 and len(list_processes)<50) :
+            print len(list_processes)
+            parallelise(list_processes, 15)
+        else:
+            condor_control(original_dir, "resubmit")
 
 
 
@@ -88,20 +92,23 @@ def local_run(original_dir,option):
 #                                                #
 ##################################################
 
-def main_program(option="", samples=[], original_dir="./SubmittedJobs/", original_file="FeasibilityStudy.xml"):
+def main_program(option="", samples=[], channels = ["muon"], original_dir="./SubmittedJobs/", original_file="FeasibilityStudy.xml", outdir ="/nfs/dust/cms/user/amalara/sframe_all/FeasibilityStudy"):
     if option == "new":
-      cmd = "rm -fr %s" % (original_dir)
-      a = os.system(cmd)
-      createConfigFiles(samples, original_dir, original_file)
+        cmd = "rm -fr %s" % (original_dir)
+        a = os.system(cmd)
+        createConfigFiles(samples, channels, original_dir, original_file)
     elif option == "remove" or option == "delete":
-      delete_workdir(original_dir)
+        delete_workdir(original_dir,outdir)
     elif option == "local" or option == "check":
-      local_run(original_dir,option)
+        local_run(original_dir,option)
     else:
-      condor_control(original_dir, option)
+        condor_control(original_dir, option)
 
 
-QCD_samples= []
+
+channels = ["muon", "electron"]
+
+QCD_samples = []
 QCD_samples.append("MC_DY1JetsToLL")
 QCD_samples.append("MC_DY2JetsToLL")
 QCD_samples.append("MC_DY3JetsToLL")
@@ -113,12 +120,14 @@ QCD_samples.append("MC_WZ")
 QCD_samples.append("MC_ZZ")
 QCD_samples.append("MC_HZ_HiggsToWWZToLL")
 
-Data_samples= []
+Data_samples = []
 Data_samples.append("Data_2017C")
 
 samples = QCD_samples+Data_samples
 
 original_file = "FeasibilityStudy.xml"
+outdir = "/nfs/dust/cms/user/amalara/sframe_all/"+original_file[:len(original_file)-4]
+
 original_dir_ = os.getcwd()
 
 original_dir = original_dir_
@@ -130,4 +139,4 @@ except:
   option = ""
 
 
-main_program(option, samples, original_dir, original_file)
+main_program(option, samples, channels, original_dir, original_file, outdir)

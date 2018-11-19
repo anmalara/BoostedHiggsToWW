@@ -2,227 +2,318 @@
 #include <memory>
 
 #include "UHH2/core/include/AnalysisModule.h"
+#include "UHH2/core/include/Selection.h"
+#include "UHH2/core/include/Utils.h"
 #include "UHH2/core/include/Event.h"
-#include "UHH2/common/include/CommonModules.h"
-#include "UHH2/common/include/CleaningModules.h"
+
 #include "UHH2/common/include/ElectronHists.h"
 #include "UHH2/common/include/MuonHists.h"
 #include <UHH2/common/include/MuonIds.h>
 #include <UHH2/common/include/ElectronIds.h>
+#include "UHH2/common/include/ObjectIdUtils.h"
+#include "UHH2/common/include/JetIds.h"
+#include "UHH2/common/include/JetCorrections.h"
+#include "UHH2/common/include/CleaningModules.h"
+#include "UHH2/common/include/CommonModules.h"
+#include "UHH2/common/include/JetCorrections.h"
+#include "UHH2/common/include/MCWeight.h"
+#include "UHH2/common/include/EventVariables.h"
+#include "UHH2/common/include/CleaningModules.h"
+#include "UHH2/common/include/EventVariables.h"
 #include "UHH2/common/include/NSelections.h"
+#include "UHH2/common/include/AdditionalSelections.h"
+#include "UHH2/common/include/LumiSelection.h"
 #include "UHH2/common/include/TriggerSelection.h"
+#include "UHH2/common/include/Utils.h"
+
+#include <UHH2/BoostedHiggsToWW/include/ModuleBase.h>
 #include "UHH2/BoostedHiggsToWW/include/BoostedHiggsToWWSelections.h"
 #include "UHH2/BoostedHiggsToWW/include/BoostedHiggsToWWHists.h"
 #include "UHH2/BoostedHiggsToWW/include/DiLeptonHists.h"
 #include "UHH2/BoostedHiggsToWW/include/BoostedHiggsToWWUtils.h"
+#include "UHH2/BoostedHiggsToWW/include/constants.hpp"
+#include "UHH2/BoostedHiggsToWW/include/Macros.hpp"
+
 
 using namespace std;
-using namespace uhh2;
 
-class FeasibilityStudyModule: public AnalysisModule {
+/*
+█ ██████  ███████ ███████ ██ ███    ██ ██ ████████ ██  ██████  ███    ██
+█ ██   ██ ██      ██      ██ ████   ██ ██    ██    ██ ██    ██ ████   ██
+█ ██   ██ █████   █████   ██ ██ ██  ██ ██    ██    ██ ██    ██ ██ ██  ██
+█ ██   ██ ██      ██      ██ ██  ██ ██ ██    ██    ██ ██    ██ ██  ██ ██
+█ ██████  ███████ ██      ██ ██   ████ ██    ██    ██  ██████  ██   ████
+*/
+
+class FeasibilityStudyModule: public ModuleBASE {
+
 public:
 
-  explicit FeasibilityStudyModule(Context & ctx);
-  virtual bool process(Event & event) override;
+  explicit FeasibilityStudyModule(uhh2::Context&);
+  virtual bool process(uhh2::Event&) override;
+  void book_histograms(uhh2::Context&, vector<string>);
+  void fill_histograms(uhh2::Event&, string);
 
-private:
+protected:
 
   // Define variables
-  string SysType_PU;
-  bool isMC;
+  bool is_mc, lumisel, mclumiweight, mcpileupreweight, jec, topjec, jersmear, topjersmear, eleid, muid, tauid, jetpfidcleaner, topjetpfidcleaner, metfilters, jetlepcleaner, topjetlepcleaner, jetid, topjetid, do_metcorrection;
+  bool muonchannel, electronchannel;
+  string SysType_PU, JEC_Version, JEC_LABEL;
 
-  // Define histograms
-  #define  DEFINEHISTOS(extention)\
-  std::unique_ptr<Hists> h_nJet_##extention, h_Electron_##extention, h_Muon_##extention, h_DiLepton_##extention;\
 
-  DEFINEHISTOS(nocuts)
-  DEFINEHISTOS(cleaned)
-  DEFINEHISTOS(trigger)
+  // Define common modules
+  std::unique_ptr<uhh2::Selection> lumi_selection;
+  std::vector<std::unique_ptr<AnalysisModule>> modules;
+  std::unique_ptr<uhh2::AndSelection> metfilters_selection;
+  // std::unique_ptr<uhh2::Selection> trigger_sel;
 
-  // CommonModules
-  std::unique_ptr<CommonModules> common;
-  // std::unique_ptr<JetLeptonOverlapRemoval> overlap_removal;
+  #define  DEFINEJEC(type)                                        \
+  std::vector<std::string> JEC_corr_##type##_AK4PFchs;            \
+  std::vector<std::string> JEC_corr_##type##_AK8PFchs;            \
+  std::vector<std::string> JEC_corr_##type##_AK4PFPuppi;          \
+  std::vector<std::string> JEC_corr_##type##_AK8PFPuppi;          \
+  std::unique_ptr<JetCorrector> jet_corrector_##type;             \
+  std::unique_ptr<TopJetCorrector> topjet_corrector_##type;       \
+  std::unique_ptr<JetLeptonCleaner_by_KEYmatching> JLC_##type;    \
+  std::unique_ptr<JetLeptonCleaner_by_KEYmatching> TopJLC_##type; \
+
+  DEFINEJEC(MC)
+  DEFINEJEC(B)
+  DEFINEJEC(C)
+  DEFINEJEC(D)
+  DEFINEJEC(E)
+  DEFINEJEC(F)
+
+  std::unique_ptr<JetResolutionSmearer> jet_resolution_smearer;
+  std::unique_ptr<GenericJetResolutionSmearer> topjet_resolution_smearer;
+  std::unique_ptr<JetCleaner> jet_cleaner;
+  std::unique_ptr<TopJetCleaner> topjet_cleaner;
 
   // Define selections
-  std::unique_ptr<uhh2::Selection> trigger_sel;
 
-  std::shared_ptr<Selection> NBoostedJetSel;
-
-  DEFINEHISTOS(NBoostedJetSel)
-
-  #define DEFINELEPTONSELECTION(Lepton)\
-  std::unique_ptr<uhh2::AndSelection> Lepton##Sel;\
-  std::shared_ptr<Selection> N##Lepton##Sel, Pt##Lepton##Sel, Di##Lepton##Sel, PhiAngularSel##Lepton;\
-  DEFINEHISTOS(N##Lepton)\
-  DEFINEHISTOS(Pt##Lepton)\
-  DEFINEHISTOS(Di##Lepton)\
-  DEFINEHISTOS(Jet##Lepton)\
-  DEFINEHISTOS(PhiAngularSel##Lepton)\
-
-
-  DEFINELEPTONSELECTION(Muon)
-  DEFINELEPTONSELECTION(Electron)
-  DEFINEHISTOS(DiLepton)
-  DEFINEHISTOS(eventSel)
-
-
-  // DEFINEHISTOS(PhiAngularSel)
+  std::shared_ptr<Selection> NBoostedJetLeptonSel, NLeptonSel, NoLeptonSel, JetDiLeptonPhiAngularSel;
+  std::shared_ptr<VetoSelection> VetoLeptonSel;
 
   // Event::Handle< std::vector< TopJet > > unsorted_jets;
 
 };
 
 
-FeasibilityStudyModule::FeasibilityStudyModule(Context & ctx){
+void FeasibilityStudyModule::book_histograms(uhh2::Context& ctx, vector<string> tags){
+  for(const auto & tag : tags){
+    string mytag;
+    mytag = "nTopJet_" + tag;  book_HFolder(mytag, new BoostedHiggsToWWHists(ctx,mytag,"topjets"));
+    mytag = "nJet_" + tag;     book_HFolder(mytag, new BoostedHiggsToWWHists(ctx,mytag,"jets"));
+    mytag = "ele_" + tag;      book_HFolder(mytag, new ElectronHists(ctx,mytag));
+    mytag = "muon_" + tag;     book_HFolder(mytag, new MuonHists(ctx,mytag));
+    mytag = "diLepton_" + tag; book_HFolder(mytag, new DiLeptonHists(ctx,mytag));
+  }
+}
+
+void FeasibilityStudyModule::fill_histograms(uhh2::Event& event, string tag){
+  string mytag;
+  mytag = "nTopJet_" + tag;  HFolder(mytag)->fill(event);
+  mytag = "nJet_" + tag;     HFolder(mytag)->fill(event);
+  mytag = "ele_" + tag;      HFolder(mytag)->fill(event);
+  mytag = "muon_" + tag;     HFolder(mytag)->fill(event);
+  mytag = "diLepton_" + tag; HFolder(mytag)->fill(event);
+}
+
+/*
+█  ██████  ██████  ███    ██ ███████ ████████ ██████  ██    ██  ██████ ████████  ██████  ██████
+█ ██      ██    ██ ████   ██ ██         ██    ██   ██ ██    ██ ██         ██    ██    ██ ██   ██
+█ ██      ██    ██ ██ ██  ██ ███████    ██    ██████  ██    ██ ██         ██    ██    ██ ██████
+█ ██      ██    ██ ██  ██ ██      ██    ██    ██   ██ ██    ██ ██         ██    ██    ██ ██   ██
+█  ██████  ██████  ██   ████ ███████    ██    ██   ██  ██████   ██████    ██     ██████  ██   ██
+*/
+
+FeasibilityStudyModule::FeasibilityStudyModule(uhh2::Context& ctx){
 
   // Set up histograms:
-  std::string name_temp;
-  #define SETHISTOS(extension)\
-  name_temp = "nJet_"; name_temp += #extension;\
-  h_nJet_##extension.reset(new BoostedHiggsToWWHists(ctx, name_temp.c_str()));\
-  name_temp = "ele_"; name_temp += #extension;\
-  h_Electron_##extension.reset(new ElectronHists(ctx, name_temp));\
-  name_temp = "muon_"; name_temp += #extension;\
-  h_Muon_##extension.reset(new MuonHists(ctx, name_temp));\
-  name_temp = "diLepton_"; name_temp += #extension;\
-  h_DiLepton_##extension.reset(new DiLeptonHists(ctx, name_temp));\
 
-  SETHISTOS(nocuts)
+  std::vector<std::string> histogram_tags({ "nocuts", "cleaned", "Veto", "NBoostedJetLepton", "NLeptonSel", "JetDiLeptonPhiAngular"});
+  book_histograms(ctx, histogram_tags);
 
   // Set up variables
+  is_mc = ctx.get("dataset_type") == "MC";
+  JEC_Version = ctx.get("JEC_Version", "Fall17_17Nov2017_V6");
+
+  lumisel = string2bool(ctx.get("lumisel", "true"));
+  mclumiweight = string2bool(ctx.get("mclumiweight", "true"));
+  mcpileupreweight = string2bool(ctx.get("mcpileupreweight", "true"));
   SysType_PU = ctx.get("SysType_PU");
-  isMC = (ctx.get("dataset_type") == "MC");
-  const std::string& trigger = ctx.get("trigger", "NULL");
+  jec = string2bool(ctx.get("jec", "true"));
+  topjec = string2bool(ctx.get("topjec", "true"));
+  jersmear = string2bool(ctx.get("jersmear", "true"));
+  topjersmear = string2bool(ctx.get("topjersmear", "true"));
+  do_metcorrection = string2bool(ctx.get("do_metcorrection", "true"));
+  eleid = string2bool(ctx.get("eleid", "true"));
+  muid = string2bool(ctx.get("muid", "true"));
+  tauid = string2bool(ctx.get("tauid", "false"));
+  jetid = string2bool(ctx.get("jetid", "true"));
+  topjetid = string2bool(ctx.get("topjetid", "true"));
+  jetpfidcleaner = true; // WP fixed TODO
+  topjetpfidcleaner = true; // WP fixed TODO
+  metfilters = string2bool(ctx.get("metfilters", "true"));
+  jetlepcleaner = string2bool(ctx.get("jetlepcleaner", "true"));
+  topjetlepcleaner = string2bool(ctx.get("topjetlepcleaner", "true"));
 
-  const JetId jetId(AndId<Jet> (JetPFID(JetPFID::WP_TIGHT), PtEtaCut(30, 2.4)));
-  const TopJetId JetIdBoosted(AndId<TopJet> (JetPFID(JetPFID::WP_TIGHT), PtEtaCut(300,2.4)));
-  const MuonId muonId(AndId<Muon> (MuonID(Muon::CutBasedIdTight), PtEtaCut(1., 4.)));
-  const ElectronId eleId(AndId<Electron>(ElectronID_MVA_Fall17_loose_iso, PtEtaSCCut(1., 4.)));
+  muonchannel = string2bool(ctx.get("muonchannel", "true"));
+  electronchannel = string2bool(ctx.get("electronchannel", "false"));
 
-  // CommonModules
-  common.reset(new CommonModules());
-  common->disable_lumisel();
-  // common->disable_mclumiweight();
-  // common->disable_jec();
-  common->disable_jersmear();
-  if (isMC) common->disable_metfilters();
-  // common->disable_mcpileupreweight();
-  common->switch_metcorrection();
-  common->disable_jetpfidfilter();
-  common->set_jet_id(jetId);
-  common->set_muon_id(muonId);
-  common->set_electron_id(eleId);
-  common->switch_jetlepcleaner();
-  common->switch_jetPtSorter();
-  common->init(ctx,SysType_PU);
+  if (muonchannel == electronchannel) throw std::runtime_error("In FeasibilityStudyModule.cxx: Choose exactly one lepton channel.");
 
-  SETHISTOS(cleaned)
+  // trigger = ctx.get("trigger", "NULL");
 
-  // overlap_removal.reset(new JetLeptonOverlapRemoval(0.8));
+  const MuonId muId(AndId<Muon> (MuonID(Muon::CutBasedIdTight), PtEtaCut(min_pt_lepton, max_eta_lepton), MuonIso(iso_lepton)));
+  const ElectronId eleId(AndId<Electron>(ElectronID_Fall17_loose, PtEtaSCCut(min_pt_lepton, max_eta_lepton)));
+  const JetId jetId(AndId<Jet> (JetPFID(JetPFID::WP_TIGHT), PtEtaCut(30, max_eta_lepton)));
+  const TopJetId jetIdBoosted(AndId<TopJet> (JetPFID(JetPFID::WP_TIGHT), PtEtaCut(300, max_eta_lepton)));
+
+  MAKE_JEC(Fall17_17Nov2017_V6, AK4PFchs)
+  MAKE_JEC(Fall17_17Nov2017_V6, AK8PFchs)
+  // MAKE_JEC(Fall17_17Nov2017_V6, AK4PFPuppi)
+  // MAKE_JEC(Fall17_17Nov2017_V6, AK8PFPuppi)
+
+
+  PrimaryVertexId pvid = StandardPrimaryVertexId(); // TODO
+  modules.emplace_back(new PrimaryVertexCleaner(pvid));
+  if(is_mc) {
+    ctx.declare_event_input<std::vector<Particle> >(ctx.get("TopJetCollectionGEN"), "topjetsGEN");
+    if(mclumiweight)  modules.emplace_back(new MCLumiWeight(ctx));
+    if(mcpileupreweight) modules.emplace_back(new MCPileupReweight(ctx,SysType_PU));
+    if(jec) jet_corrector_MC.reset(new JetCorrector(ctx, JEC_corr_MC_AK4PFchs));
+    if(topjec) topjet_corrector_MC.reset(new TopJetCorrector(ctx, JEC_corr_MC_AK8PFchs));
+    if(jersmear) jet_resolution_smearer.reset(new JetResolutionSmearer(ctx, JERSmearing::SF_13TeV_Summer16_25nsV1));
+    if(topjersmear) topjet_resolution_smearer.reset(new GenericJetResolutionSmearer(ctx, "topjets", "topjetsGEN", JERSmearing::SF_13TeV_Summer16_25nsV1, "Fall17_25nsV1_MC_PtResolution_AK8PFchs.txt"));
+  } else {
+    if(lumisel) lumi_selection.reset(new LumiSelection(ctx));
+    if(jec){ SET_JET_CORRECTION(JetCorrector, AK8PFchs, jet) }
+    if(topjec){ SET_JET_CORRECTION(TopJetCorrector, AK8PFchs, topjet) }
+  }
+
+  if(eleid) modules.emplace_back(new ElectronCleaner(eleId));
+  if(muid)  modules.emplace_back(new MuonCleaner(muId));
+  // if(tauid) modules.emplace_back(new TauCleaner(tauId));
+  if(jetpfidcleaner) modules.emplace_back(new JetCleaner(ctx, JetPFID(JetPFID::WP_TIGHT))); // TODO
+  if(topjetpfidcleaner) modules.emplace_back(new TopJetCleaner(ctx, JetPFID(JetPFID::WP_TIGHT), "topjets"));
+
+  // modules.emplace_back(new HTCalculator(ctx,HT_jetid));
+
+  if(!is_mc && metfilters){ SET_MET_FILTERS() }
+
+  if(jetlepcleaner){ SET_JETLEPTON_CLEANER(JLC, AK4PFchs, jets) }
+  if(topjetlepcleaner){ SET_JETLEPTON_CLEANER(TopJLC, AK8PFchs, topjets) }
+
+  if(jetid) jet_cleaner.reset(new JetCleaner(ctx, jetId));
+  if(topjetid) topjet_cleaner.reset(new TopJetCleaner(ctx, jetIdBoosted, "topjets"));
+
 
   // Set up selections
-  if(!isMC && trigger != "NULL") trigger_sel.reset(new TriggerSelection(trigger));
-  else trigger_sel.reset(new AndSelection(ctx));
-  SETHISTOS(trigger)
+  // TODO when change the strategy move trigger to the second step of the Analysis
+  // TODO triggers are used also for MC!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  // if(trigger != "NULL") trigger_sel.reset(new TriggerSelection(trigger));
 
-  NBoostedJetSel.reset(new NTopJetSelection(1,-1,JetIdBoosted));
-  SETHISTOS(NBoostedJetSel)
+  NBoostedJetLeptonSel.reset(new NTopJetSelection(1));
+  if (muonchannel) {
+    NLeptonSel.reset(new NMuonSelection(min_leptons)); // min_leptons=2
+    NoLeptonSel.reset(new NElectronSelection(1));
+  }
+  if (electronchannel) {
+    NLeptonSel.reset(new NElectronSelection(min_leptons)); // min_leptons=2
+    NoLeptonSel.reset(new NMuonSelection(1));
+  }
+  VetoLeptonSel.reset(new VetoSelection(NoLeptonSel));
 
-  #define SETLEPTONSELECTION(Lepton)\
-  N##Lepton##Sel.reset(new N##Lepton##Selection(2));\
-  SETHISTOS(N##Lepton)\
-  Pt##Lepton##Sel.reset(new Lepton##PtIsoSelection(30, 0.2));\
-  SETHISTOS(Pt##Lepton)\
-  Di##Lepton##Sel.reset(new Di##Lepton##Selection());\
-  SETHISTOS(Di##Lepton)\
-  name_temp = #Lepton; name_temp += "_filters";\
-  Lepton##Sel.reset(new uhh2::AndSelection(ctx, name_temp));\
-  name_temp = "2 "; name_temp += #Lepton;\
-  Lepton##Sel->add(name_temp, N##Lepton##Sel);\
-  name_temp = "pt_"; name_temp += #Lepton;\
-  Lepton##Sel->add(name_temp, Pt##Lepton##Sel);\
-  name_temp = "di"; name_temp += #Lepton;\
-  Lepton##Sel->add(name_temp, Di##Lepton##Sel);\
-  Lepton##Sel->add("nboostedjet >=2 ", NBoostedJetSel);\
-  SETHISTOS(Jet##Lepton)\
-  PhiAngularSel##Lepton.reset(new Jet##Lepton##PhiAngularSelection(2.7));\
-  SETHISTOS(PhiAngularSel##Lepton)\
-  Lepton##Sel->add("#Delta#phi(jet,dilep) >2.7", PhiAngularSel##Lepton);\
-
-  SETLEPTONSELECTION(Muon)
-  SETLEPTONSELECTION(Electron)
-
-  SETHISTOS(DiLepton)
-  SETHISTOS(eventSel)
+  if (muonchannel) JetDiLeptonPhiAngularSel.reset(new JetDiMuonPhiAngularSelection(min_delta_phi));
+  if (electronchannel) JetDiLeptonPhiAngularSel.reset(new JetDiElectronPhiAngularSelection(min_delta_phi));
 
   // unsorted_jets = ctx.declare_event_output< std::vector< TopJet > >("unsorted_jets");
 
 }
 
 
-bool FeasibilityStudyModule::process(Event & event) {
+/*
+█ ██████  ██████   ██████   ██████ ███████ ███████ ███████
+█ ██   ██ ██   ██ ██    ██ ██      ██      ██      ██
+█ ██████  ██████  ██    ██ ██      █████   ███████ ███████
+█ ██      ██   ██ ██    ██ ██      ██           ██      ██
+█ ██      ██   ██  ██████   ██████ ███████ ███████ ███████
+*/
 
-  #define FILLHISTOS(extension)\
-  h_nJet_##extension->fill(event);\
-  h_Electron_##extension->fill(event);\
-  h_Muon_##extension->fill(event);\
-  h_DiLepton_##extension->fill(event);\
+bool FeasibilityStudyModule::process(uhh2::Event& event) {
 
-  FILLHISTOS(nocuts)
+  bool apply_B = false, apply_C = false, apply_D = false, apply_E = false, apply_F = false;
+
+  if(event.isRealData){
+    if(event.run <= s_runnr_A) throw std::runtime_error("In FeasibilityStudyModule.cxx: Run number for RunA used.");
+    else if(event.run <= s_runnr_B) apply_B = true;
+    else if(event.run <= s_runnr_C) apply_C = true;
+    else if(event.run <= s_runnr_D) apply_D = true;
+    else if(event.run <= s_runnr_E) apply_E = true;
+    else if(event.run <= s_runnr_F) apply_F = true;
+    else throw std::runtime_error("In FeasibilityStudyModule.cxx: Run number not covered by if-statements in process-routine.");
+    if(apply_B+apply_C+apply_D+apply_E+apply_F != 1) throw std::runtime_error("In FeasibilityStudyModule.cxx: Sum of apply_* when applying JECs is not == 1. Fix this.");
+  }
+
+  fill_histograms(event, "nocuts");
+
+  // COMMON MODULES
+
   // 1. run all modules other modules.
-  common->process(event);
-  FILLHISTOS(cleaned)
-  // overlap_removal->process(event);
+  // common->process(event);
 
+  if(event.isRealData && lumisel) if(!lumi_selection->passes(event)) return false;
+
+  for(auto & m : modules){
+    m->process(event);
+  }
+
+  if(event.isRealData && metfilters) if(!metfilters_selection->passes(event)) return false;
+
+  if(jetlepcleaner){    APPLY_PROCESS(JLC,process) }
+  if(topjetlepcleaner){ APPLY_PROCESS(TopJLC,process) }
+  if(jec){              APPLY_PROCESS(jet_corrector,process) }
+  if(topjec){           APPLY_PROCESS(topjet_corrector,process) }
+  if(jersmear && is_mc) jet_resolution_smearer->process(event);
+  if(topjersmear && is_mc) topjet_resolution_smearer->process(event);
+  if(do_metcorrection){ APPLY_PROCESS(jet_corrector,correct_met) }
+  if(jetid) jet_cleaner->process(event);
+  if(topjetid) topjet_cleaner->process(event);
+
+  fill_histograms(event, "cleaned");
+
+  sort_by_pt<Jet>(*event.jets);
   sort_by_pt<TopJet>(*event.topjets);
   sort_by_pt<Muon>(*event.muons);
   sort_by_pt<Electron>(*event.electrons);
 
-  const bool pass_trigger = trigger_sel->passes(event);
-  if(!pass_trigger) return false;
-  FILLHISTOS(trigger)
+  if(! VetoLeptonSel->passes(event)) return false;
+  fill_histograms(event, "Veto");
 
-  // boosted Jet Selection
-  bool JetPass = true;
-  bool NBoostedJetPass = NBoostedJetSel->passes(event);
-  JetPass = JetPass && NBoostedJetPass;
-  if(JetPass) FILLHISTOS(NBoostedJetSel)
-  sort_by_pt<TopJet>(*event.topjets);
+  //
+  // if(trigger != "NULL") {
+  //   const bool pass_trigger = trigger_sel->passes(event);
+  //   if(!pass_trigger) return false;
+  // }
+  //
 
   // Lepton Selection
 
-  #define PASSLEPTONSELECTION(Lepton)\
-  bool Lepton##Pass = true;\
-  bool N##Lepton##Pass = N##Lepton##Sel->passes(event);\
-  Lepton##Pass = Lepton##Pass && N##Lepton##Pass;\
-  if(Lepton##Pass) {FILLHISTOS(N##Lepton)}\
-  bool Pt##Lepton##Pass = Pt##Lepton##Sel->passes(event);\
-  Lepton##Pass = Lepton##Pass && Pt##Lepton##Pass;\
-  if(Lepton##Pass) {FILLHISTOS(Pt##Lepton)}\
-  bool Di##Lepton##Pass = Di##Lepton##Sel->passes(event);\
-  Lepton##Pass = Lepton##Pass && Di##Lepton##Pass;\
-  if(Lepton##Pass) {FILLHISTOS(Di##Lepton)}\
-  Lepton##Pass = Lepton##Pass && JetPass;\
-  if(Lepton##Pass) {FILLHISTOS(Jet##Lepton)}\
-  bool PhiAngularSel##Lepton##Pass = PhiAngularSel##Lepton->passes(event);\
-  Lepton##Pass = Lepton##Pass && PhiAngularSel##Lepton##Pass;\
-  if(Lepton##Pass) {FILLHISTOS(PhiAngularSel##Lepton)}\
-  bool Total##Lepton##Pass = Lepton##Sel->passes(event);\
-  if (Lepton##Pass != Total##Lepton##Pass) throw std::runtime_error("Recheck selection!");\
+  if(! NBoostedJetLeptonSel->passes(event)) return false;
+  fill_histograms(event, "NBoostedJetLepton");
 
-  PASSLEPTONSELECTION(Muon)
-  PASSLEPTONSELECTION(Electron)
+  if(! NLeptonSel->passes(event)) return false;
+  fill_histograms(event, "NLeptonSel");
 
-  bool eventPass = MuonPass || ElectronPass;
-  if (eventPass) FILLHISTOS(DiLepton)
+  if(! JetDiLeptonPhiAngularSel->passes(event)) return false;
+  fill_histograms(event, "JetDiLeptonPhiAngular");
 
   // std::vector< Jet > my_unsorted_jets = *event.topjets;
   // event.set(unsorted_jets, std::move(my_unsorted_jets));
   // sort_topjet_by_dilepdist(event);
 
-  eventPass = XOR(MuonPass,ElectronPass);
-  if (!eventPass) return false;
-  FILLHISTOS(eventSel)
   return true;
 }
 

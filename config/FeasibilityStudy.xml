@@ -3,19 +3,42 @@
 
 <!-- Generic Value -->
 <!ENTITY CACHEABLE                  "False">
+<!ENTITY INPUTDIR                   "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2">
 <!ENTITY OUTDIR                     "/nfs/dust/cms/user/amalara/sframe_all/FeasibilityStudy">
 <!ENTITY NEVT                       "-1">
 
 <!-- MC PuReweighting -->
-<!ENTITY SYSTYPE_PU                 "central">    <!-- central, up, down -->
-<!ENTITY PILEUP_DIRECTORY           "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/data/MyMCPileupHistogram.root">
-<!ENTITY PILEUP_DIRECTORY_DATA      "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/data/MyDataPileupHistogram.root">
-<!ENTITY PILEUP_DIRECTORY_DATA_UP   "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/data/MyDataPileupHistogram_72383.root">
-<!ENTITY PILEUP_DIRECTORY_DATA_DOWN "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/data/MyDataPileupHistogram_66017.root">
+<!ENTITY SysType_PU                 "central">    <!-- central, up, down -->
+<!ENTITY pileup_directory           "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/data/MyMCPileupHistogram.root">
+<!ENTITY pileup_directory_data      "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/data/MyDataPileupHistogram.root">
+<!ENTITY pileup_directory_data_up   "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/data/MyDataPileupHistogram_72383.root">
+<!ENTITY pileup_directory_data_down "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/data/MyDataPileupHistogram_66017.root">
+
+<!-- Cleaning variables -->
+<!ENTITY lumisel                    "true">  <!--true/false -->
+<!ENTITY mclumiweight               "true">  <!--true/false -->
+<!ENTITY mcpileupreweight           "true">  <!--true/false -->
+<!ENTITY metfilters                 "true">  <!--true/false -->
+<!ENTITY jec                        "true">  <!--true/false -->
+<!ENTITY topjec                     "true">  <!--true/false -->
+<!ENTITY jersmear                   "true">  <!--true/false -->
+<!ENTITY topjersmear                "true">  <!--true/false -->
+<!ENTITY jetpfidcleaner             "true">  <!--true--> <!--fixed value -->
+<!ENTITY topjetpfidcleaner          "true">  <!--true/false -->
+<!ENTITY jetlepcleaner              "true">  <!--true/false -->
+<!ENTITY eleid                      "true">  <!--true/false -->
+<!ENTITY muid                       "true">  <!--true/false -->
+<!ENTITY tauid                      "false"> <!--true/false -->
+<!ENTITY jetid                      "true">  <!--true/false -->
+<!ENTITY topjetid                   "true">  <!--true/false -->
+<!ENTITY muonchannel                "true">  <!--true/false -->
+<!ENTITY electronchannel            "true">  <!--true/false -->
 
 <!-- Systematic uncertainties -->
-<!ENTITY JERSMEAR_DIRECTION         "nominal">  <!--nominal/down/up -->
-<!ENTITY JECSMEAR_DIRECTION         "nominal">  <!--nominal/down/up -->
+<!ENTITY JEC_Version                "Fall17_17Nov2017_V6">
+<!ENTITY jecsmear_direction         "nominal">  <!--nominal/down/up -->
+<!ENTITY jersmear_direction         "nominal">  <!--nominal/down/up -->
+
 
 <!-- MC Samples -->
 <!ENTITY MC_DY1JetsToLL             SYSTEM  "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v1_woHOTVR_woXCONE/MC_DY1JetsToLL_M-50.xml">
@@ -30,13 +53,18 @@
 <!ENTITY MC_ZZ                      SYSTEM  "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_80X_v3_EGReg/ZZ_EGReg.xml">
 <!ENTITY MC_HZ_HiggsToWWZToLL       SYSTEM  "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/BoostedHiggsToWW/config/xmlfile/HZ_HiggsToWWZToLL_Pythia8_TuneCP5.xml">
 <!-- Data Samples -->
+<!ENTITY DATA_SingleMuon_RunB       SYSTEM  "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v1_woHOTVR_woXCONE/DATA_SingleMuonB.xml">
+<!ENTITY DATA_SingleMuon_RunC       SYSTEM  "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v1/SingleMu_RunC_17Nov_v1.xml">
+<!ENTITY DATA_SingleMuon_RunD       SYSTEM  "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v1/DATA_SingleMuonD.xml">
+<!ENTITY DATA_SingleMuon_RunE       SYSTEM  "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v1_woHOTVR_woXCONE/DATA_SingleMuonE.xml">
+<!ENTITY DATA_SingleMuon_RunF       SYSTEM  "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/common/datasets/RunII_94X_v1_woHOTVR_woXCONE/DATA_SingleMuonF.xml">
 <!ENTITY Data_2017C                 SYSTEM  "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2/BoostedHiggsToWW/config/xmlfile/SingleMu_C_2_1_18.xml">
 
 ]>
 
 <!--
-<ConfigParse NEventsBreak="0" FileSplit="100" AutoResubmit="5"/>
-<ConfigSGE RAM ="4" DISK ="2" Mail="andrea.malara@desy.de" Notification="as" Workdir="workdir_FeasibilityStudy"/>
+<ConfigParse NEventsBreak="0" FileSplit="40" AutoResubmit="5"/>
+<ConfigSGE RAM ="8" DISK ="4" Mail="andrea.malara@desy.de" Notification="as" Workdir="workdir_FeasibilityStudy"/>
 -->
 
 <!-- OutputLevel controls which messages are printed; set to VERBOSE or DEBUG for more verbosity, to WARNING or ERROR for less -->
@@ -71,11 +99,14 @@
       <Item Name="MuonCollection"             Value="slimmedMuonsUSER" />
       <Item Name="TauCollection"              Value="slimmedTaus" />
       <Item Name="JetCollection"              Value="slimmedJets" /> <!-- slimmedJetsAK8_SoftDrop, slimmedJets -->
+      <Item Name="TopJetCollection"           Value="packedPatJetsAk8CHSJets_SoftDropCHS" />  <!-- slimmedJetsAK8_SoftDrop -->
       <Item Name="METName"                    Value="slimmedMETs" />
       <Item Name="GenInfoName"                Value="genInfo" />
-			<Item Name="GenParticleCollection"      Value="GenParticles" />
-      <Item Name="GenJetCollection"           Value="slimmedGenJetsAK8" />
-      <Item Name="TopJetCollection"           Value="packedPatJetsAk8CHSJets_SoftDropCHS" />  <!-- slimmedJetsAK8_SoftDrop -->
+      <Item Name="GenParticleCollection"      Value="GenParticles" />
+      <Item Name="GenJetCollection"           Value="slimmedGenJets"/>
+      <Item Name="TopJetCollectionGEN"        Value="slimmedGenJetsAK8"/>
+
+
       <!-- The list of available collections to read in corresponds to the pointer members in event. The 'Name's to use here in the configuration are:
 
       PrimaryVertexCollection
@@ -101,7 +132,7 @@
       <Item Name="readTrigger" Value="false" />
     -->
     <Item Name="readTrigger" Value="false" />
-    <Item Name="trigger" Value="HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_v*" />
+    <Item Name="trigger" Value="HLT_IsoMu27_v*" />
 
     <!-- tell AnalysisModuleRunner NOT to use the MC event weight from SFrame; rather let
     MCLumiWeight (called via CommonModules) calculate the MC event weight. The MC
@@ -112,15 +143,36 @@
     <Item Name="lumihists_lumi_per_bin"     Value="500."/> <!-- used in UHH2/common/include/LuminosityHists.h -->
 
     <!-- Systematic uncertainties -->
-    <Item Name="jersmear_direction"         Value="&JERSMEAR_DIRECTION;"/>  <!--used only in UHH2/common/include/JetCorrections.cxx -->
-    <Item Name="jecsmear_direction"         Value="&JECSMEAR_DIRECTION;"/>  <!--used only in UHH2/common/include/JetCorrections.cxx -->
+    <Item Name="jersmear_direction"         Value="&jersmear_direction;"/>  <!--used only in UHH2/common/include/JetCorrections.cxx -->
+    <Item Name="jecsmear_direction"         Value="&jecsmear_direction;"/>  <!--used only in UHH2/common/include/JetCorrections.cxx -->
 
     <!-- MC PuReweighting -->
-    <Item Name="SysType_PU"                 Value="&SYSTYPE_PU;"/>
-    <Item Name="pileup_directory"           Value="&PILEUP_DIRECTORY;"/>            <!--used only in UHH2/common/include/MCWeight.h -->
-    <Item Name="pileup_directory_data"      Value="&PILEUP_DIRECTORY_DATA;"/>       <!--used only in UHH2/common/include/MCWeight.h -->
-    <Item Name="pileup_directory_data_up"   Value="&PILEUP_DIRECTORY_DATA_UP;"/>    <!--used only in UHH2/common/include/MCWeight.h -->
-    <Item Name="pileup_directory_data_down" Value="&PILEUP_DIRECTORY_DATA_DOWN;"/>  <!--used only in UHH2/common/include/MCWeight.h -->
+    <Item Name="SysType_PU"                 Value="&SysType_PU;"/>
+    <Item Name="pileup_directory"           Value="&pileup_directory;"/>            <!--used only in UHH2/common/include/MCWeight.h -->
+    <Item Name="pileup_directory_data"      Value="&pileup_directory_data;"/>       <!--used only in UHH2/common/include/MCWeight.h -->
+    <Item Name="pileup_directory_data_up"   Value="&pileup_directory_data_up;"/>    <!--used only in UHH2/common/include/MCWeight.h -->
+    <Item Name="pileup_directory_data_down" Value="&pileup_directory_data_down;"/>  <!--used only in UHH2/common/include/MCWeight.h -->
+
+    <!-- Cleaning variables -->
+    <Item Name="lumisel"                    Value="&lumisel;"/>
+    <Item Name="mclumiweight"               Value="&mclumiweight;"/>
+    <Item Name="mcpileupreweight"           Value="&mcpileupreweight;"/>
+    <Item Name="metfilters"                 Value="&metfilters;"/>
+    <Item Name="jec"                        Value="&jec;"/>
+    <Item Name="topjec"                     Value="&topjec;"/>
+    <Item Name="jersmear"                   Value="&jersmear;"/>
+    <Item Name="topjersmear"                Value="&topjersmear;"/>
+    <Item Name="jetpfidcleaner"             Value="&jetpfidcleaner;"/>
+    <Item Name="topjetpfidcleaner"          Value="&topjetpfidcleaner;"/>
+    <Item Name="jetlepcleaner"              Value="&jetlepcleaner;"/>
+    <Item Name="eleid"                      Value="&eleid;"/>
+    <Item Name="muid"                       Value="&muid;"/>
+    <Item Name="tauid"                      Value="&tauid;"/>
+    <Item Name="jetid"                      Value="&jetid;"/>
+    <Item Name="topjetid"                   Value="&topjetid;"/>
+    <Item Name="muonchannel"                Value="&muonchannel;"/>
+    <Item Name="electronchannel"            Value="&electronchannel;"/>
+
 
     <!-- the class name of the AnalysisModule subclasses to run: -->
     <Item Name="AnalysisModule"             Value="FeasibilityStudyModule" />

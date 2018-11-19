@@ -4,6 +4,7 @@
 #include "UHH2/core/include/fwd.h"
 #include "UHH2/core/include/Selection.h"
 #include "UHH2/BoostedHiggsToWW/include/BoostedHiggsToWWUtils.h"
+#include "UHH2/BoostedHiggsToWW/include/constants.hpp"
 
 namespace uhh2 {
 
@@ -13,43 +14,37 @@ namespace uhh2 {
   * The jets are assumed to be sorted in pt.
   */
 
-  /////
-  #define DEFINELeptonPtIsoSelection(Lepton)\
-  class Lepton##PtIsoSelection: public Selection {\
+  ////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////
+
+  #define DEFINENLeptonPtEtaIsoSelection(Lepton)\
+  class N##Lepton##PtEtaIsoSelection: public Selection {\
   public:\
-    Lepton##PtIsoSelection(float pt_lepton = 5, float min_isolation = 0.2);\
+    N##Lepton##PtEtaIsoSelection(int n_lepton = 2, float pt_lepton = 5, float eta_lepton = 4., float min_isolation = 0.2);\
     virtual bool passes(const Event & event) override;\
   private:\
-    float pt_lepton, min_isolation;\
+    float n_lepton, pt_lepton, eta_lepton, min_isolation;\
   };\
 
-  DEFINELeptonPtIsoSelection(Muon)
-  DEFINELeptonPtIsoSelection(Electron)
+  DEFINENLeptonPtEtaIsoSelection(Muon)
+  DEFINENLeptonPtEtaIsoSelection(Electron)
 
-  /////
+  ////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////
 
-  #define  DEFINEDiLeptonSelection(Lepton)\
-  class Di##Lepton##Selection: public Selection {\
+  #define DEFINEJetDiLeptonPhiAngularSelection(Lepton)\
+  class JetDi##Lepton##PhiAngularSelection: public Selection {\
   public:\
-    Di##Lepton##Selection();\
-    virtual bool passes(const Event & event) override;\
-  };\
-
-  DEFINEDiLeptonSelection(Muon)
-  DEFINEDiLeptonSelection(Electron)
-
-  /////
-
-  #define DEFINEJetLeptonPhiAngularSelection(Lepton)\
-  class Jet##Lepton##PhiAngularSelection: public Selection {\
-  public:\
-    Jet##Lepton##PhiAngularSelection(float phi_min = 0, float phi_max = M_PI);\
+    JetDi##Lepton##PhiAngularSelection(float phi_min = 0, float phi_max = M_PI);\
     virtual bool passes(const Event & event) override;\
   private:\
     float phi_min, phi_max;\
   };\
 
-  DEFINEJetLeptonPhiAngularSelection(Muon)
-  DEFINEJetLeptonPhiAngularSelection(Electron)
+  DEFINEJetDiLeptonPhiAngularSelection(Muon)
+  DEFINEJetDiLeptonPhiAngularSelection(Electron)
+
+  ////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////
 
 }
