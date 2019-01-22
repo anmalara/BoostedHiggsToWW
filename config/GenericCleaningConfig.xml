@@ -4,7 +4,7 @@
 <!-- Generic Value -->
 <!ENTITY CACHEABLE                  "False">
 <!ENTITY INPUTDIR                   "/nfs/dust/cms/user/amalara/WorkingArea/UHH2_94/CMSSW_9_4_1/src/UHH2">
-<!ENTITY OUTDIR                     "/nfs/dust/cms/user/amalara/sframe_all/FeasibilityStudy">
+<!ENTITY OUTDIR                     "/nfs/dust/cms/user/amalara/sframe_all/GenericCleaning">
 <!ENTITY NEVT                       "-1">
 
 <!-- MC PuReweighting -->
@@ -64,12 +64,12 @@
 ]>
 
 <!--
-<ConfigParse NEventsBreak="0" FileSplit="30" AutoResubmit="5"/>
-<ConfigSGE RAM ="8" DISK ="4" Mail="andrea.malara@desy.de" Notification="as" Workdir="workdir_FeasibilityStudy"/>
+<ConfigParse NEventsBreak="0" FileSplit="20" AutoResubmit="5"/>
+<ConfigSGE RAM ="2" DISK ="2" Mail="andrea.malara@desy.de" Notification="as" Workdir="workdir_GenericCleaning"/>
 -->
 
 <!-- OutputLevel controls which messages are printed; set to VERBOSE or DEBUG for more verbosity, to WARNING or ERROR for less -->
-<JobConfiguration JobName="FeasibilityStudyJob" OutputLevel="INFO">
+<JobConfiguration JobName="GenericCleaningJob" OutputLevel="INFO">
   <Library Name="libSUHH2BoostedHiggsToWW"/>
   <Package Name="SUHH2BoostedHiggsToWW.par" />
 
@@ -176,7 +176,7 @@
 
 
     <!-- the class name of the AnalysisModule subclasses to run: -->
-    <Item Name="AnalysisModule"             Value="FeasibilityStudyModule" />
+    <Item Name="AnalysisModule"             Value="GenericCleaningModule" />
 
   </UserConfig>
 </Cycle>

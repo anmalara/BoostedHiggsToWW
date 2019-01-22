@@ -31,9 +31,8 @@ srcfiles = {"MC": srcfiles_MC, "DATA": srcfiles_DATA}
 
 
 list_processes = []
-channel = "electronchannel"
 for channel in channels:
     for key in Data_MC:
         MergeFiles(list_processes, srcfiles[key], inputDir+Data_MC[key]+"/"+channel, outputDir+"/"+channel)
 
-parallelise(list_processes, 10)
+parallelise(list_processes, 16)

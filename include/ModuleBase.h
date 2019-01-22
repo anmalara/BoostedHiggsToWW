@@ -39,8 +39,3 @@ F* ModuleBASE::HFolder(const std::string& key_){
   if(!f) throw std::runtime_error("ModuleBASE::HFolder -- null pointer to folder: "+key_);
   return f;
 }
-
-
-bool ModuleBASE::process(uhh2::Event&){
-  return false;
-}

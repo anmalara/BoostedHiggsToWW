@@ -46,11 +46,11 @@ using namespace std;
 █ ██████  ███████ ██      ██ ██   ████ ██    ██    ██  ██████  ██   ████
 */
 
-class FeasibilityStudyModule: public ModuleBASE {
+class GenericCleaningModule: public ModuleBASE {
 
 public:
 
-  explicit FeasibilityStudyModule(uhh2::Context&);
+  explicit GenericCleaningModule(uhh2::Context&);
   virtual bool process(uhh2::Event&) override;
   void book_histograms(uhh2::Context&, vector<string>);
   void fill_histograms(uhh2::Event&, string);
@@ -93,35 +93,33 @@ protected:
 
   // Define selections
 
-  std::shared_ptr<Selection> NBoostedJetLeptonSel, NLeptonSel, NoLeptonSel, JetDiLeptonPhiAngularSel;
+  std::shared_ptr<Selection> NBoostedJetSel, NoLeptonSel;
   std::shared_ptr<VetoSelection> VetoLeptonSel;
 
   Event::Handle< float > h_weights_lumi, h_weights_GLP, h_weight_pu;
 
-  // Event::Handle< std::vector< TopJet > > unsorted_jets;
-
 };
 
 
-void FeasibilityStudyModule::book_histograms(uhh2::Context& ctx, vector<string> tags){
+void GenericCleaningModule::book_histograms(uhh2::Context& ctx, vector<string> tags){
   for(const auto & tag : tags){
     string mytag;
     mytag = "nTopJet_" + tag;  book_HFolder(mytag, new BoostedHiggsToWWHists(ctx,mytag,"topjets"));
     mytag = "nJet_" + tag;     book_HFolder(mytag, new BoostedHiggsToWWHists(ctx,mytag,"jets"));
     mytag = "ele_" + tag;      book_HFolder(mytag, new ElectronHists(ctx,mytag));
     mytag = "muon_" + tag;     book_HFolder(mytag, new MuonHists(ctx,mytag));
-    mytag = "event_" + tag;     book_HFolder(mytag, new EventHists(ctx,mytag));
+    mytag = "event_" + tag;    book_HFolder(mytag, new EventHists(ctx,mytag));
     mytag = "diLepton_" + tag; book_HFolder(mytag, new DiLeptonHists(ctx,mytag));
   }
 }
 
-void FeasibilityStudyModule::fill_histograms(uhh2::Event& event, string tag){
+void GenericCleaningModule::fill_histograms(uhh2::Event& event, string tag){
   string mytag;
   mytag = "nTopJet_" + tag;  HFolder(mytag)->fill(event);
   mytag = "nJet_" + tag;     HFolder(mytag)->fill(event);
   mytag = "ele_" + tag;      HFolder(mytag)->fill(event);
   mytag = "muon_" + tag;     HFolder(mytag)->fill(event);
-  mytag = "event_" + tag;     HFolder(mytag)->fill(event);
+  mytag = "event_" + tag;    HFolder(mytag)->fill(event);
   mytag = "diLepton_" + tag; HFolder(mytag)->fill(event);
 }
 
@@ -133,11 +131,11 @@ void FeasibilityStudyModule::fill_histograms(uhh2::Event& event, string tag){
 █  ██████  ██████  ██   ████ ███████    ██    ██   ██  ██████   ██████    ██     ██████  ██   ██
 */
 
-FeasibilityStudyModule::FeasibilityStudyModule(uhh2::Context& ctx){
+GenericCleaningModule::GenericCleaningModule(uhh2::Context& ctx){
 
   // Set up histograms:
 
-  std::vector<std::string> histogram_tags({ "nocuts", "cleaned", "Veto", "NBoostedJetLepton", "NLeptonSel", "JetDiLeptonPhiAngular"});
+  std::vector<std::string> histogram_tags({ "nocuts", "cleaned", "Veto", "NBoostedJet"});
   book_histograms(ctx, histogram_tags);
 
   // Set up variables
@@ -167,9 +165,7 @@ FeasibilityStudyModule::FeasibilityStudyModule(uhh2::Context& ctx){
   muonchannel = string2bool(ctx.get("muonchannel", "true"));
   electronchannel = string2bool(ctx.get("electronchannel", "false"));
 
-  if (muonchannel == electronchannel) throw std::runtime_error("In FeasibilityStudyModule.cxx: Choose exactly one lepton channel.");
-
-  // trigger = ctx.get("trigger", "NULL");
+  if (muonchannel == electronchannel) throw std::runtime_error("In GenericCleaningModule.cxx: Choose exactly one lepton channel.");
 
   const MuonId muId(AndId<Muon> (MuonID(Muon::CutBasedIdTight), PtEtaCut(min_pt_lepton, max_eta_lepton), MuonIso(iso_lepton)));
   const ElectronId eleId(AndId<Electron>(ElectronID_Fall17_loose, PtEtaSCCut(min_pt_lepton, max_eta_lepton)));
@@ -216,28 +212,17 @@ FeasibilityStudyModule::FeasibilityStudyModule(uhh2::Context& ctx){
 
 
   // Set up selections
-  // TODO when change the strategy move trigger to the second step of the Analysis
-  // TODO triggers are used also for MC!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  // if(trigger != "NULL") trigger_sel.reset(new TriggerSelection(trigger));
 
-  NBoostedJetLeptonSel.reset(new NTopJetSelection(1));
-  if (muonchannel) {
-    NLeptonSel.reset(new NMuonSelection(min_leptons)); // min_leptons=2
-    NoLeptonSel.reset(new NElectronSelection(1));
-  }
-  if (electronchannel) {
-    NLeptonSel.reset(new NElectronSelection(min_leptons)); // min_leptons=2
-    NoLeptonSel.reset(new NMuonSelection(1));
-  }
+  NBoostedJetSel.reset(new NTopJetSelection(1));
+  if (muonchannel) NoLeptonSel.reset(new NElectronSelection(1));
+  if (electronchannel) NoLeptonSel.reset(new NMuonSelection(1));
+
   VetoLeptonSel.reset(new VetoSelection(NoLeptonSel));
 
-  if (muonchannel) JetDiLeptonPhiAngularSel.reset(new JetDiMuonPhiAngularSelection(min_delta_phi));
-  if (electronchannel) JetDiLeptonPhiAngularSel.reset(new JetDiElectronPhiAngularSelection(min_delta_phi));
-
   h_weights_lumi = ctx.declare_event_output< float >("weights_lumi");
-  h_weight_pu = ctx.get_handle< float >("weight_pu");
+  if (is_mc) h_weight_pu = ctx.get_handle< float >("weight_pu");
+  else h_weight_pu = ctx.declare_event_output< float >("weight_pu");
   h_weights_GLP = ctx.declare_event_output< float >("weights_GLP");
-  // unsorted_jets = ctx.declare_event_output< std::vector< TopJet > >("unsorted_jets");
 
 }
 
@@ -250,19 +235,19 @@ FeasibilityStudyModule::FeasibilityStudyModule(uhh2::Context& ctx){
 █ ██      ██   ██  ██████   ██████ ███████ ███████ ███████
 */
 
-bool FeasibilityStudyModule::process(uhh2::Event& event) {
+bool GenericCleaningModule::process(uhh2::Event& event) {
 
   bool apply_B = false, apply_C = false, apply_D = false, apply_E = false, apply_F = false;
 
   if(event.isRealData){
-    if(event.run <= s_runnr_A) throw std::runtime_error("In FeasibilityStudyModule.cxx: Run number for RunA used.");
+    if(event.run <= s_runnr_A) throw std::runtime_error("In GenericCleaningModule.cxx: Run number for RunA used.");
     else if(event.run <= s_runnr_B) apply_B = true;
     else if(event.run <= s_runnr_C) apply_C = true;
     else if(event.run <= s_runnr_D) apply_D = true;
     else if(event.run <= s_runnr_E) apply_E = true;
     else if(event.run <= s_runnr_F) apply_F = true;
-    else throw std::runtime_error("In FeasibilityStudyModule.cxx: Run number not covered by if-statements in process-routine.");
-    if(apply_B+apply_C+apply_D+apply_E+apply_F != 1) throw std::runtime_error("In FeasibilityStudyModule.cxx: Sum of apply_* when applying JECs is not == 1. Fix this.");
+    else throw std::runtime_error("In GenericCleaningModule.cxx: Run number not covered by if-statements in process-routine.");
+    if(apply_B+apply_C+apply_D+apply_E+apply_F != 1) throw std::runtime_error("In GenericCleaningModule.cxx: Sum of apply_* when applying JECs is not == 1. Fix this.");
   }
 
   fill_histograms(event, "nocuts");
@@ -276,7 +261,10 @@ bool FeasibilityStudyModule::process(uhh2::Event& event) {
     m->process(event);
   }
 
-  event.set(h_weights_lumi, event.weight/(weight_gen*event.get(h_weight_pu)));
+  double weight_pu = 1;
+  if (is_mc) weight_pu = event.get(h_weight_pu);
+  else event.set(h_weight_pu, weight_pu);
+  event.set(h_weights_lumi, event.weight/(weight_gen*weight_pu));
 
   if(event.isRealData && metfilters) if(!metfilters_selection->passes(event)) return false;
 
@@ -300,27 +288,8 @@ bool FeasibilityStudyModule::process(uhh2::Event& event) {
   if(! VetoLeptonSel->passes(event)) return false;
   fill_histograms(event, "Veto");
 
-  //
-  // if(trigger != "NULL") {
-  //   const bool pass_trigger = trigger_sel->passes(event);
-  //   if(!pass_trigger) return false;
-  // }
-  //
-
-  // Lepton Selection
-
-  if(! NBoostedJetLeptonSel->passes(event)) return false;
-  fill_histograms(event, "NBoostedJetLepton");
-
-  if(! NLeptonSel->passes(event)) return false;
-  fill_histograms(event, "NLeptonSel");
-
-  if(! JetDiLeptonPhiAngularSel->passes(event)) return false;
-  fill_histograms(event, "JetDiLeptonPhiAngular");
-
-  // std::vector< Jet > my_unsorted_jets = *event.topjets;
-  // event.set(unsorted_jets, std::move(my_unsorted_jets));
-  // sort_topjet_by_dilepdist(event);
+  if(! NBoostedJetSel->passes(event)) return false;
+  fill_histograms(event, "NBoostedJet");
 
   event.set(h_weights_GLP, event.weight);
 
@@ -328,5 +297,5 @@ bool FeasibilityStudyModule::process(uhh2::Event& event) {
 }
 
 // as we want to run the ExampleCycleNew directly with AnalysisModuleRunner,
-// make sure the FeasibilityStudyModule is found by class name. This is ensured by this macro:
-UHH2_REGISTER_ANALYSIS_MODULE(FeasibilityStudyModule)
+// make sure the GenericCleaningModule is found by class name. This is ensured by this macro:
+UHH2_REGISTER_ANALYSIS_MODULE(GenericCleaningModule)

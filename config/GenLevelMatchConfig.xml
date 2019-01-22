@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE JobConfiguration PUBLIC "" "JobConfig.dtd"[
+
+<!-- Generic Value -->
+<!ENTITY CACHEABLE                  "False">
+<!ENTITY INPUTDIR                   "/nfs/dust/cms/user/amalara/sframe_all/GenericCleaning">
+<!ENTITY OUTDIR                     "/nfs/dust/cms/user/amalara/sframe_all/GenLevelMatch">
+<!ENTITY NEVT                       "-1">
+
+<!ENTITY PREFIX                     "uhh2.AnalysisModuleRunner.">
+<!ENTITY CHANNEL                    "channel">  <!--muon/electron -->
+<!ENTITY muonchannel                "true">  <!--true/false -->
+<!ENTITY electronchannel            "true">  <!--true/false -->
+
+<!-- MC Samples -->
+<!ENTITY MC_DY1JetsToLL             "&INPUTDIR;_MC/&CHANNEL;/&PREFIX;MC.MC_DY1JetsToLL.root">
+<!ENTITY MC_DY2JetsToLL             "&INPUTDIR;_MC/&CHANNEL;/&PREFIX;MC.MC_DY2JetsToLL.root">
+<!ENTITY MC_DY3JetsToLL             "&INPUTDIR;_MC/&CHANNEL;/&PREFIX;MC.MC_DY3JetsToLL.root">
+<!ENTITY MC_DY4JetsToLL             "&INPUTDIR;_MC/&CHANNEL;/&PREFIX;MC.MC_DY4JetsToLL.root">
+<!ENTITY MC_TTbarSemiLeptonic       "&INPUTDIR;_MC/&CHANNEL;/&PREFIX;MC.MC_TTbarSemiLeptonic.root">
+<!ENTITY MC_TTTo2L2Nu               "&INPUTDIR;_MC/&CHANNEL;/&PREFIX;MC.MC_TTTo2L2Nu.root">
+<!ENTITY MC_TTToHadronic            "&INPUTDIR;_MC/&CHANNEL;/&PREFIX;MC.MC_TTToHadronic.root">
+<!ENTITY MC_WZ                      "&INPUTDIR;_MC/&CHANNEL;/&PREFIX;MC.MC_WZ.root">
+<!ENTITY MC_ZZ                      "&INPUTDIR;_MC/&CHANNEL;/&PREFIX;MC.MC_ZZ.root">
+<!ENTITY MC_HZ_HiggsToWWZToLL       "&INPUTDIR;_MC/&CHANNEL;/&PREFIX;MC.MC_HZ_HiggsToWWZToLL.root">
+
+<!-- Data Samples -->
+<!ENTITY Data_2017C                 "&INPUTDIR;_DATA/&CHANNEL;/&PREFIX;DATA.Data_2017C.root">
+
+]>
+
+<!--
+<ConfigParse NEventsBreak="0" FileSplit="0" AutoResubmit="5"/>
+<ConfigSGE RAM ="2" DISK ="2" Mail="andrea.malara@desy.de" Notification="as" Workdir="workdir_GenLevelMatch"/>
+-->
+
+<!-- OutputLevel controls which messages are printed; set to VERBOSE or DEBUG for more verbosity, to WARNING or ERROR for less -->
+<JobConfiguration JobName="GenLevelMatchJob" OutputLevel="INFO">
+  <Library Name="libSUHH2BoostedHiggsToWW"/>
+  <Package Name="SUHH2BoostedHiggsToWW.par" />
+
+  <Cycle Name="uhh2::AnalysisModuleRunner" OutputDirectory="&OUTDIR;/" PostFix="" TargetLumi="1" >
+
+    <!-- MC -->
+    <InputData Type="MC"    Version="MC_DY1JetsToLL"        Lumi="1"  NEventsMax="&NEVT;" Cacheable="&CACHEABLE;">  <In FileName="&MC_DY1JetsToLL;"       Lumi="0.0" /> <InputTree Name="AnalysisTree" /> </InputData>
+    <InputData Type="MC"    Version="MC_DY2JetsToLL"        Lumi="1"  NEventsMax="&NEVT;" Cacheable="&CACHEABLE;">  <In FileName="&MC_DY2JetsToLL;"       Lumi="0.0" /> <InputTree Name="AnalysisTree" /> </InputData>
+    <InputData Type="MC"    Version="MC_DY3JetsToLL"        Lumi="1"  NEventsMax="&NEVT;" Cacheable="&CACHEABLE;">  <In FileName="&MC_DY3JetsToLL;"       Lumi="0.0" /> <InputTree Name="AnalysisTree" /> </InputData>
+    <InputData Type="MC"    Version="MC_DY4JetsToLL"        Lumi="1"  NEventsMax="&NEVT;" Cacheable="&CACHEABLE;">  <In FileName="&MC_DY4JetsToLL;"       Lumi="0.0" /> <InputTree Name="AnalysisTree" /> </InputData>
+    <InputData Type="MC"    Version="MC_TTbarSemiLeptonic"  Lumi="1"  NEventsMax="&NEVT;" Cacheable="&CACHEABLE;">  <In FileName="&MC_TTbarSemiLeptonic;" Lumi="0.0" /> <InputTree Name="AnalysisTree" /> </InputData>
+    <InputData Type="MC"    Version="MC_TTTo2L2Nu"          Lumi="1"  NEventsMax="&NEVT;" Cacheable="&CACHEABLE;">  <In FileName="&MC_TTTo2L2Nu;"         Lumi="0.0" /> <InputTree Name="AnalysisTree" /> </InputData>
+    <InputData Type="MC"    Version="MC_TTToHadronic"       Lumi="1"  NEventsMax="&NEVT;" Cacheable="&CACHEABLE;">  <In FileName="&MC_TTToHadronic;"      Lumi="0.0" /> <InputTree Name="AnalysisTree" /> </InputData>
+    <InputData Type="MC"    Version="MC_WZ"                 Lumi="1"  NEventsMax="&NEVT;" Cacheable="&CACHEABLE;">  <In FileName="&MC_WZ;"                Lumi="0.0" /> <InputTree Name="AnalysisTree" /> </InputData>
+    <InputData Type="MC"    Version="MC_ZZ"                 Lumi="1"  NEventsMax="&NEVT;" Cacheable="&CACHEABLE;">  <In FileName="&MC_ZZ;"                Lumi="0.0" /> <InputTree Name="AnalysisTree" /> </InputData>
+    <InputData Type="MC"    Version="MC_HZ_HiggsToWWZToLL"  Lumi="1"  NEventsMax="&NEVT;" Cacheable="&CACHEABLE;">  <In FileName="&MC_HZ_HiggsToWWZToLL;" Lumi="0.0" /> <InputTree Name="AnalysisTree" /> </InputData>
+
+    <!-- Data -->
+    <InputData Type="DATA"  Version="Data_2017C"            Lumi="1"  NEventsMax="&NEVT;" Cacheable="&CACHEABLE;">  <In FileName="&Data_2017C;"           Lumi="0.0" /> <InputTree Name="AnalysisTree" /> </InputData>
+
+
+    <UserConfig>
+      <!-- define which collections to read from the input. Only specify what you need to save I/O time -->
+      <Item Name="PrimaryVertexCollection"    Value="offlineSlimmedPrimaryVertices" />
+      <Item Name="ElectronCollection"         Value="slimmedElectronsUSER" />
+      <Item Name="MuonCollection"             Value="slimmedMuonsUSER" />
+      <Item Name="TauCollection"              Value="slimmedTaus" />
+      <Item Name="JetCollection"              Value="slimmedJets" /> <!-- slimmedJetsAK8_SoftDrop, slimmedJets -->
+      <Item Name="TopJetCollection"           Value="packedPatJetsAk8CHSJets_SoftDropCHS" />  <!-- slimmedJetsAK8_SoftDrop -->
+      <Item Name="METName"                    Value="slimmedMETs" />
+      <Item Name="GenInfoName"                Value="genInfo" />
+      <Item Name="GenParticleCollection"      Value="GenParticles" />
+      <Item Name="GenJetCollection"           Value="slimmedGenJets"/>
+      <Item Name="TopJetCollectionGEN"        Value="slimmedGenJetsAK8"/>
+
+
+      <!-- The list of available collections to read in corresponds to the pointer members in event. The 'Name's to use here in the configuration are:
+
+      PrimaryVertexCollection
+      ElectronCollection
+      MuonCollection
+      TauCollection
+      PhotonCollection
+      JetCollection
+      TopJetCollection
+      METName
+
+      GenInfoName
+      GenJetCollection
+      GenTopJetCollection
+      GenParticleCollection
+
+      Note that the last four are only read in for MC (InputData Type="MC"), so it is save to specify
+      them for real data, although those branches do not exist.
+
+      As 'Value', always use the branch name (if in doubt, open the input file in ROOT).
+
+      By default, triggers are read. To explicitly disable reading triggers, use:
+      <Item Name="readTrigger" Value="false" />
+    -->
+    <Item Name="readTrigger" Value="false" />
+    <Item Name="trigger" Value="HLT_IsoMu27_v*" />
+
+    <!-- tell AnalysisModuleRunner NOT to use the MC event weight from SFrame; rather let
+    MCLumiWeight (called via CommonModules) calculate the MC event weight. The MC
+    event weight assigned by MCLumiWeight is InputData.Lumi / Cycle.TargetLumi. -->
+    <Item Name="use_sframe_weight"          Value="false"/>
+
+    <Item Name="muonchannel"                Value="&muonchannel;"/>
+    <Item Name="electronchannel"            Value="&electronchannel;"/>
+
+
+    <!-- the class name of the AnalysisModule subclasses to run: -->
+    <Item Name="AnalysisModule"             Value="GenLevelMatchModule" />
+
+  </UserConfig>
+</Cycle>
+</JobConfiguration>

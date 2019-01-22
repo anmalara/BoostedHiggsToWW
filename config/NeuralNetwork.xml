@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE JobConfiguration PUBLIC "" "JobConfig.dtd"[
+
+<!-- Generic Value -->
+<!ENTITY CACHEABLE                  "False">
+<!ENTITY PRESELDIR                  "/nfs/dust/cms/user/amalara/WorkingArea/File/Analysis/Preselection">
+<!ENTITY OUTDIR                     "/nfs/dust/cms/user/amalara/sframe_all/NeuralNetwork">
+<!ENTITY NEVT                       "-1">
+
+<!ENTITY PREFIX                     "uhh2.AnalysisModuleRunner.">
+<!ENTITY CHANNEL                    "channel">  <!--muon/electron -->
+<!ENTITY muonchannel                "true">  <!--true/false -->
+<!ENTITY electronchannel            "true">  <!--true/false -->
+
+<!-- MC Samples -->
+<!ENTITY MC_DYJets                  "&PRESELDIR;/&CHANNEL;/&PREFIX;MC_DYJets.root">
+<!ENTITY MC_TTbar                   "&PRESELDIR;/&CHANNEL;/&PREFIX;MC_TTbar.root">
+<!ENTITY MC_WZ                      "&PRESELDIR;/&CHANNEL;/&PREFIX;MC_WZ.root">
+<!ENTITY MC_ZZ                      "&PRESELDIR;/&CHANNEL;/&PREFIX;MC_ZZ.root">
+<!ENTITY MC_HZ                      "&PRESELDIR;/&CHANNEL;/&PREFIX;MC_HZ.root">
+
+<!-- Data Samples -->
+<!ENTITY DATA                       "&PRESELDIR;/&CHANNEL;/&PREFIX;DATA.root">
+
+]>
+
+<!--
+<ConfigParse NEventsBreak="0" FileSplit="30" AutoResubmit="5"/>
+<ConfigSGE RAM ="8" DISK ="4" Mail="andrea.malara@desy.de" Notification="as" Workdir="workdir_NeuralNetwork"/>
+-->
+
+<!-- OutputLevel controls which messages are printed; set to VERBOSE or DEBUG for more verbosity, to WARNING or ERROR for less -->
+<JobConfiguration JobName="NeuralNetworkJob" OutputLevel="INFO">
+  <Library Name="libSUHH2BoostedHiggsToWW"/>
+  <Package Name="SUHH2BoostedHiggsToWW.par" />
+
+  <Cycle Name="uhh2::AnalysisModuleRunner" OutputDirectory="&OUTDIR;/" PostFix="" TargetLumi="1" >
+
+    <!-- MC -->
+    <InputData Type="MC"    Version="MC_DYJets" Lumi="1"  NEventsMax="&NEVT;" Cacheable="&CACHEABLE;">  <In FileName="&MC_DYJets;"  Lumi="0.0" /> <InputTree Name="AnalysisTree" /> <OutputTree Name="AnalysisTree" /> </InputData>
+    <InputData Type="MC"    Version="MC_TTbar"  Lumi="1"  NEventsMax="&NEVT;" Cacheable="&CACHEABLE;">  <In FileName="&MC_TTbar;"   Lumi="0.0" /> <InputTree Name="AnalysisTree" /> <OutputTree Name="AnalysisTree" /> </InputData>
+    <InputData Type="MC"    Version="MC_WZ"     Lumi="1"  NEventsMax="&NEVT;" Cacheable="&CACHEABLE;">  <In FileName="&MC_WZ;"      Lumi="0.0" /> <InputTree Name="AnalysisTree" /> <OutputTree Name="AnalysisTree" /> </InputData>
+    <InputData Type="MC"    Version="MC_ZZ"     Lumi="1"  NEventsMax="&NEVT;" Cacheable="&CACHEABLE;">  <In FileName="&MC_ZZ;"      Lumi="0.0" /> <InputTree Name="AnalysisTree" /> <OutputTree Name="AnalysisTree" /> </InputData>
+    <InputData Type="MC"    Version="MC_HZ"     Lumi="1"  NEventsMax="&NEVT;" Cacheable="&CACHEABLE;">  <In FileName="&MC_HZ;"      Lumi="0.0" /> <InputTree Name="AnalysisTree" /> <OutputTree Name="AnalysisTree" /> </InputData>
+
+    <!-- Data -->
+    <InputData Type="DATA"  Version="DATA"      Lumi="1"  NEventsMax="&NEVT;" Cacheable="&CACHEABLE;">  <In FileName="&DATA;"       Lumi="0.0" /> <InputTree Name="AnalysisTree" /> <OutputTree Name="AnalysisTree" /> </InputData>
+
+
+    <UserConfig>
+      <!-- define which collections to read from the input. Only specify what you need to save I/O time -->
+      <Item Name="PrimaryVertexCollection"    Value="offlineSlimmedPrimaryVertices" />
+      <Item Name="ElectronCollection"         Value="slimmedElectronsUSER" />
+      <Item Name="MuonCollection"             Value="slimmedMuonsUSER" />
+      <Item Name="TauCollection"              Value="slimmedTaus" />
+      <Item Name="JetCollection"              Value="slimmedJets" /> <!-- slimmedJetsAK8_SoftDrop, slimmedJets -->
+      <Item Name="TopJetCollection"           Value="packedPatJetsAk8CHSJets_SoftDropCHS" />  <!-- slimmedJetsAK8_SoftDrop -->
+      <Item Name="METName"                    Value="slimmedMETs" />
+      <Item Name="GenInfoName"                Value="genInfo" />
+      <Item Name="GenParticleCollection"      Value="GenParticles" />
+      <Item Name="GenJetCollection"           Value="slimmedGenJets"/>
+      <Item Name="TopJetCollectionGEN"        Value="slimmedGenJetsAK8"/>
+
+
+      <!-- The list of available collections to read in corresponds to the pointer members in event. The 'Name's to use here in the configuration are:
+
+      PrimaryVertexCollection
+      ElectronCollection
+      MuonCollection
+      TauCollection
+      PhotonCollection
+      JetCollection
+      TopJetCollection
+      METName
+
+      GenInfoName
+      GenJetCollection
+      GenTopJetCollection
+      GenParticleCollection
+
+      Note that the last four are only read in for MC (InputData Type="MC"), so it is save to specify
+      them for real data, although those branches do not exist.
+
+      As 'Value', always use the branch name (if in doubt, open the input file in ROOT).
+
+      By default, triggers are read. To explicitly disable reading triggers, use:
+      <Item Name="readTrigger" Value="false" />
+    -->
+    <Item Name="readTrigger" Value="false" />
+    <Item Name="trigger" Value="HLT_IsoMu27_v*" />
+
+    <!-- tell AnalysisModuleRunner NOT to use the MC event weight from SFrame; rather let
+    MCLumiWeight (called via CommonModules) calculate the MC event weight. The MC
+    event weight assigned by MCLumiWeight is InputData.Lumi / Cycle.TargetLumi. -->
+    <Item Name="use_sframe_weight"          Value="false"/>
+
+    <Item Name="muonchannel"                Value="&muonchannel;"/>
+    <Item Name="electronchannel"            Value="&electronchannel;"/>
+
+
+    <!-- the class name of the AnalysisModule subclasses to run: -->
+    <Item Name="AnalysisModule"             Value="NeuralNetworkModule" />
+
+  </UserConfig>
+</Cycle>
+</JobConfiguration>
