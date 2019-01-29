@@ -100,7 +100,7 @@
       <Item Name="MuonCollection"             Value="slimmedMuonsUSER" />
       <Item Name="TauCollection"              Value="slimmedTaus" />
       <Item Name="JetCollection"              Value="slimmedJets" /> <!-- slimmedJetsAK8_SoftDrop, slimmedJets -->
-      <Item Name="TopJetCollection"           Value="packedPatJetsAk8CHSJets_SoftDropCHS" />  <!-- slimmedJetsAK8_SoftDrop -->
+      <Item Name="TopJetCollection"           Value="updatedPatJetsSlimmedJetsAK8_SoftDropPuppi" />  <!-- slimmedJetsAK8_SoftDrop --> <!-- packedPatJetsAk8CHSJets_SoftDropCHS -->
       <Item Name="METName"                    Value="slimmedMETs" />
       <Item Name="GenInfoName"                Value="genInfo" />
       <Item Name="GenParticleCollection"      Value="GenParticles" />

@@ -29,7 +29,9 @@
 
 #include <UHH2/BoostedHiggsToWW/include/ModuleBase.h>
 #include "UHH2/BoostedHiggsToWW/include/BoostedHiggsToWWSelections.h"
-#include "UHH2/BoostedHiggsToWW/include/BoostedHiggsToWWHists.h"
+#include "UHH2/BoostedHiggsToWW/include/BoostedHiggsToWWJetHists.h"
+#include "UHH2/BoostedHiggsToWW/include/JetHistosWithConditions.h"
+#include "UHH2/BoostedHiggsToWW/include/GenMatchHists.h"
 #include "UHH2/BoostedHiggsToWW/include/DiLeptonHists.h"
 #include "UHH2/BoostedHiggsToWW/include/BoostedHiggsToWWUtils.h"
 #include "UHH2/BoostedHiggsToWW/include/constants.hpp"
@@ -58,7 +60,7 @@ public:
 protected:
 
   // Define variables
-  bool is_mc, lumisel, mclumiweight, mcpileupreweight, jec, topjec, jersmear, topjersmear, eleid, muid, tauid, jetpfidcleaner, topjetpfidcleaner, metfilters, jetlepcleaner, topjetlepcleaner, jetid, topjetid, do_metcorrection;
+  bool is_mc, lumisel, mclumiweight, mcpileupreweight, isPuppi, jec, topjec, jersmear, topjersmear, eleid, muid, tauid, jetpfidcleaner, topjetpfidcleaner, metfilters, jetlepcleaner, topjetlepcleaner, jetid, topjetid, do_metcorrection;
   bool muonchannel, electronchannel;
   string SysType_PU, JEC_Version, JEC_LABEL;
 
@@ -86,15 +88,16 @@ protected:
   DEFINEJEC(E)
   DEFINEJEC(F)
 
-  std::unique_ptr<JetResolutionSmearer> jet_resolution_smearer;
-  std::unique_ptr<GenericJetResolutionSmearer> topjet_resolution_smearer;
+  std::unique_ptr<GenericJetResolutionSmearer> jet_resolution_smearer, topjet_resolution_smearer;
   std::unique_ptr<JetCleaner> jet_cleaner;
-  std::unique_ptr<TopJetCleaner> topjet_cleaner;
+  std::unique_ptr<TopJetCleaner> topjet_cleaner, topjet_cleaner_noboost;
 
   // Define selections
 
-  std::shared_ptr<Selection> NBoostedJetSel, NoLeptonSel;
+  std::shared_ptr<Selection> NoLeptonSel, NBoostedJetSel, NLeptonSel, JetDiLeptonPhiAngularSel;
   std::shared_ptr<VetoSelection> VetoLeptonSel;
+
+  std::shared_ptr<Selection> TopJetHiggsMatch;
 
   Event::Handle< float > h_weights_lumi, h_weights_GLP, h_weight_pu;
 
@@ -104,23 +107,35 @@ protected:
 void GenericCleaningModule::book_histograms(uhh2::Context& ctx, vector<string> tags){
   for(const auto & tag : tags){
     string mytag;
-    mytag = "nTopJet_" + tag;  book_HFolder(mytag, new BoostedHiggsToWWHists(ctx,mytag,"topjets"));
-    mytag = "nJet_" + tag;     book_HFolder(mytag, new BoostedHiggsToWWHists(ctx,mytag,"jets"));
-    mytag = "ele_" + tag;      book_HFolder(mytag, new ElectronHists(ctx,mytag));
-    mytag = "muon_" + tag;     book_HFolder(mytag, new MuonHists(ctx,mytag));
-    mytag = "event_" + tag;    book_HFolder(mytag, new EventHists(ctx,mytag));
-    mytag = "diLepton_" + tag; book_HFolder(mytag, new DiLeptonHists(ctx,mytag));
+    mytag = "gen_"                + tag; book_HFolder(mytag, new GenMatchHists(ctx,mytag));
+    mytag = "nTopJet_ZMatch_"     + tag; book_HFolder(mytag, new JetHistosWithConditions(ctx,mytag,"topjets",ZMatch,0.8));
+    mytag = "nTopJet_HMatch_"     + tag; book_HFolder(mytag, new JetHistosWithConditions(ctx,mytag,"topjets",HMatch));
+    mytag = "nTopJet_WWfullHad_"  + tag; book_HFolder(mytag, new JetHistosWithConditions(ctx,mytag,"topjets",WWfullHad));
+    mytag = "nTopJet_WWfullLep_"  + tag; book_HFolder(mytag, new JetHistosWithConditions(ctx,mytag,"topjets",WWfullLep));
+    mytag = "nTopJet_WWsemiLep_"  + tag; book_HFolder(mytag, new JetHistosWithConditions(ctx,mytag,"topjets",WWsemiLep));
+    mytag = "nTopJet_"            + tag; book_HFolder(mytag, new BoostedHiggsToWWJetHists(ctx,mytag,"topjets"));
+    mytag = "nJet_"               + tag; book_HFolder(mytag, new BoostedHiggsToWWJetHists(ctx,mytag,"jets"));
+    mytag = "ele_"                + tag; book_HFolder(mytag, new ElectronHists(ctx,mytag));
+    mytag = "muon_"               + tag; book_HFolder(mytag, new MuonHists(ctx,mytag));
+    mytag = "event_"              + tag; book_HFolder(mytag, new EventHists(ctx,mytag));
+    mytag = "diLepton_"           + tag; book_HFolder(mytag, new DiLeptonHists(ctx,mytag));
   }
 }
 
 void GenericCleaningModule::fill_histograms(uhh2::Event& event, string tag){
   string mytag;
-  mytag = "nTopJet_" + tag;  HFolder(mytag)->fill(event);
-  mytag = "nJet_" + tag;     HFolder(mytag)->fill(event);
-  mytag = "ele_" + tag;      HFolder(mytag)->fill(event);
-  mytag = "muon_" + tag;     HFolder(mytag)->fill(event);
-  mytag = "event_" + tag;    HFolder(mytag)->fill(event);
-  mytag = "diLepton_" + tag; HFolder(mytag)->fill(event);
+  mytag = "gen_"                + tag; HFolder(mytag)->fill(event);
+  mytag = "nTopJet_ZMatch_"     + tag; HFolder(mytag)->fill(event);
+  mytag = "nTopJet_HMatch_"     + tag; HFolder(mytag)->fill(event);
+  mytag = "nTopJet_WWfullHad_"  + tag; HFolder(mytag)->fill(event);
+  mytag = "nTopJet_WWfullLep_"  + tag; HFolder(mytag)->fill(event);
+  mytag = "nTopJet_WWsemiLep_"  + tag; HFolder(mytag)->fill(event);
+  mytag = "nTopJet_"            + tag; HFolder(mytag)->fill(event);
+  mytag = "nJet_"               + tag; HFolder(mytag)->fill(event);
+  mytag = "ele_"                + tag; HFolder(mytag)->fill(event);
+  mytag = "muon_"               + tag; HFolder(mytag)->fill(event);
+  mytag = "event_"              + tag; HFolder(mytag)->fill(event);
+  mytag = "diLepton_"           + tag; HFolder(mytag)->fill(event);
 }
 
 /*
@@ -135,8 +150,8 @@ GenericCleaningModule::GenericCleaningModule(uhh2::Context& ctx){
 
   // Set up histograms:
 
-  std::vector<std::string> histogram_tags({ "nocuts", "cleaned", "Veto", "NBoostedJet"});
-  book_histograms(ctx, histogram_tags);
+  std::vector<std::string> HistoTags({ "nocuts", "IDs", "metfilters", "jetlep", "JEC", "JER", "MET", "jetIDnoboost", "jetID", "cleaned", "Veto", "NBoostedJet", "NLeptonSel", "JetDiLeptonPhiAngular"});
+  book_histograms(ctx, HistoTags);
 
   // Set up variables
   is_mc = ctx.get("dataset_type") == "MC";
@@ -146,6 +161,7 @@ GenericCleaningModule::GenericCleaningModule(uhh2::Context& ctx){
   mclumiweight = string2bool(ctx.get("mclumiweight", "true"));
   mcpileupreweight = string2bool(ctx.get("mcpileupreweight", "true"));
   SysType_PU = ctx.get("SysType_PU");
+  isPuppi = string2bool(ctx.get("isPuppi", "true"));
   jec = string2bool(ctx.get("jec", "true"));
   topjec = string2bool(ctx.get("topjec", "true"));
   jersmear = string2bool(ctx.get("jersmear", "true"));
@@ -174,8 +190,16 @@ GenericCleaningModule::GenericCleaningModule(uhh2::Context& ctx){
 
   MAKE_JEC(Fall17_17Nov2017_V6, AK4PFchs)
   MAKE_JEC(Fall17_17Nov2017_V6, AK8PFchs)
-  // MAKE_JEC(Fall17_17Nov2017_V6, AK4PFPuppi)
-  // MAKE_JEC(Fall17_17Nov2017_V6, AK8PFPuppi)
+  MAKE_JEC(Fall17_17Nov2017_V6, AK4PFPuppi)
+  MAKE_JEC(Fall17_17Nov2017_V6, AK8PFPuppi)
+  // if (!isPuppi) {
+  //   MAKE_JEC(Fall17_17Nov2017_V32, AK4PFchs)
+  //   MAKE_JEC(Fall17_17Nov2017_V32, AK8PFchs)
+  // }
+  // if (isPuppi) {
+  //   MAKE_JEC(Fall17_17Nov2017_V32, AK4PFPuppi)
+  //   MAKE_JEC(Fall17_17Nov2017_V32, AK8PFPuppi)
+  // }
 
 
   PrimaryVertexId pvid = StandardPrimaryVertexId(); // TODO
@@ -188,10 +212,36 @@ GenericCleaningModule::GenericCleaningModule(uhh2::Context& ctx){
     if(topjec) topjet_corrector_MC.reset(new TopJetCorrector(ctx, JEC_corr_MC_AK8PFchs));
     if(jersmear) jet_resolution_smearer.reset(new JetResolutionSmearer(ctx, JERSmearing::SF_13TeV_Summer16_25nsV1));
     if(topjersmear) topjet_resolution_smearer.reset(new GenericJetResolutionSmearer(ctx, "topjets", "topjetsGEN", JERSmearing::SF_13TeV_Summer16_25nsV1, "Fall17_25nsV1_MC_PtResolution_AK8PFchs.txt"));
+    // if(topjersmear) topjet_resolution_smearer.reset(new GenericJetResolutionSmearer(ctx, "topjets", "topjetsGEN", JERSmearing::SF_13TeV_Fall17_V3_RunBCDEF_Pythia, "Fall17_V3_MC_PtResolution_AK8PFchs.txt"));
+    // if(jersmear)    jet_resolution_smearer.reset(new GenericJetResolutionSmearer(ctx, "jets", "genjets", JERSmearing::SF_13TeV_Fall17_V3_RunBCDEF_Pythia, "Fall17_V3_MC_PtResolution_AK4PFchs.txt"));
+    // if (!isPuppi) {
+    //   if(jec) jet_corrector_MC.reset(new JetCorrector(ctx, JEC_corr_MC_AK4PFchs));
+    //   if(topjec) topjet_corrector_MC.reset(new TopJetCorrector(ctx, JEC_corr_MC_AK8PFchs));
+    // }
+    // if (isPuppi) {
+    //   if(jec) jet_corrector_MC.reset(new JetCorrector(ctx, JEC_corr_MC_AK4PFPuppi));
+    //   if(topjec) topjet_corrector_MC.reset(new TopJetCorrector(ctx, JEC_corr_MC_AK8PFPuppi));
+    // }
+    // if (!isPuppi) {
+    //   if(jersmear)    jet_resolution_smearer.reset(new GenericJetResolutionSmearer(ctx, "jets", "genjets", JERSmearing::SF_13TeV_Fall17_V3_RunBCDEF_Pythia, "Fall17_V3_MC_PtResolution_AK4PFchs.txt"));
+    //   if(topjersmear) topjet_resolution_smearer.reset(new GenericJetResolutionSmearer(ctx, "topjets", "topjetsGEN", JERSmearing::SF_13TeV_Fall17_V3_RunBCDEF_Pythia, "Fall17_V3_MC_PtResolution_AK8PFchs.txt"));
+    // }
+    // if (isPuppi) {
+    //   if(jersmear)    jet_resolution_smearer.reset(new GenericJetResolutionSmearer(ctx, "jets", "genjets", JERSmearing::SF_13TeV_Fall17_V3_RunBCDEF_Pythia, "Fall17_V3_MC_PtResolution_AK4PFPuppi.txt"));
+    //   if(topjersmear) topjet_resolution_smearer.reset(new GenericJetResolutionSmearer(ctx, "topjets", "topjetsGEN", JERSmearing::SF_13TeV_Fall17_V3_RunBCDEF_Pythia, "Fall17_V3_MC_PtResolution_AK8PFPuppi.txt"));
+    // }
   } else {
     if(lumisel) lumi_selection.reset(new LumiSelection(ctx));
     if(jec){ SET_JET_CORRECTION(JetCorrector, AK8PFchs, jet) }
     if(topjec){ SET_JET_CORRECTION(TopJetCorrector, AK8PFchs, topjet) }
+    // if (!isPuppi) {
+    //   if(jec){ SET_JET_CORRECTION(JetCorrector, AK$PFchs, jet) }
+    //   if(topjec){ SET_JET_CORRECTION(TopJetCorrector, AK8PFchs, topjet) }
+    // }
+    // if (isPuppi) {
+    //   if(jec){ SET_JET_CORRECTION(JetCorrector, AK8PFPuppi, jet) }
+    //   if(topjec){ SET_JET_CORRECTION(TopJetCorrector, AK8PFPuppi, topjet) }
+    // }
   }
 
   if(eleid) modules.emplace_back(new ElectronCleaner(eleId));
@@ -206,23 +256,43 @@ GenericCleaningModule::GenericCleaningModule(uhh2::Context& ctx){
 
   if(jetlepcleaner){ SET_JETLEPTON_CLEANER(JLC, AK4PFchs, jets) }
   if(topjetlepcleaner){ SET_JETLEPTON_CLEANER(TopJLC, AK8PFchs, topjets) }
+  // if (!isPuppi) {
+  //   if(jetlepcleaner){ SET_JETLEPTON_CLEANER(JLC, AK4PFchs, jets) }
+  //   if(topjetlepcleaner){ SET_JETLEPTON_CLEANER(TopJLC, AK8PFchs, topjets) }
+  // }
+  // if (isPuppi) {
+  //   if(jetlepcleaner){ SET_JETLEPTON_CLEANER(JLC, AK4PFPuppi, jets) }
+  //   if(topjetlepcleaner){ SET_JETLEPTON_CLEANER(TopJLC, AK8PFPuppi, topjets) }
+  // }
 
   if(jetid) jet_cleaner.reset(new JetCleaner(ctx, jetId));
+  if(topjetid) topjet_cleaner_noboost.reset(new TopJetCleaner(ctx, JetPFID(JetPFID::WP_TIGHT), "topjets"));
   if(topjetid) topjet_cleaner.reset(new TopJetCleaner(ctx, jetIdBoosted, "topjets"));
 
 
   // Set up selections
 
   NBoostedJetSel.reset(new NTopJetSelection(1));
-  if (muonchannel) NoLeptonSel.reset(new NElectronSelection(1));
-  if (electronchannel) NoLeptonSel.reset(new NMuonSelection(1));
-
+  if (muonchannel) {
+    NLeptonSel.reset(new NMuonSelection(min_leptons)); // min_leptons=2
+    NoLeptonSel.reset(new NElectronSelection(1));
+  }
+  if (electronchannel) {
+    NLeptonSel.reset(new NElectronSelection(min_leptons)); // min_leptons=2
+    NoLeptonSel.reset(new NMuonSelection(1));
+  }
   VetoLeptonSel.reset(new VetoSelection(NoLeptonSel));
+
+  if (muonchannel) JetDiLeptonPhiAngularSel.reset(new JetDiMuonPhiAngularSelection(min_delta_phi));
+  if (electronchannel) JetDiLeptonPhiAngularSel.reset(new JetDiElectronPhiAngularSelection(min_delta_phi));
 
   h_weights_lumi = ctx.declare_event_output< float >("weights_lumi");
   if (is_mc) h_weight_pu = ctx.get_handle< float >("weight_pu");
   else h_weight_pu = ctx.declare_event_output< float >("weight_pu");
   h_weights_GLP = ctx.declare_event_output< float >("weights_GLP");
+
+
+  TopJetHiggsMatch.reset(new TopJetHiggsMatching());
 
 }
 
@@ -237,6 +307,8 @@ GenericCleaningModule::GenericCleaningModule(uhh2::Context& ctx){
 
 bool GenericCleaningModule::process(uhh2::Event& event) {
 
+  fill_histograms(event, "nocuts");
+
   bool apply_B = false, apply_C = false, apply_D = false, apply_E = false, apply_F = false;
 
   if(event.isRealData){
@@ -250,8 +322,6 @@ bool GenericCleaningModule::process(uhh2::Event& event) {
     if(apply_B+apply_C+apply_D+apply_E+apply_F != 1) throw std::runtime_error("In GenericCleaningModule.cxx: Sum of apply_* when applying JECs is not == 1. Fix this.");
   }
 
-  fill_histograms(event, "nocuts");
-
   // COMMON MODULES
 
   auto weight_gen = event.weight;
@@ -261,22 +331,32 @@ bool GenericCleaningModule::process(uhh2::Event& event) {
     m->process(event);
   }
 
+  fill_histograms(event, "IDs");
+
   double weight_pu = 1;
   if (is_mc) weight_pu = event.get(h_weight_pu);
   else event.set(h_weight_pu, weight_pu);
   event.set(h_weights_lumi, event.weight/(weight_gen*weight_pu));
 
   if(event.isRealData && metfilters) if(!metfilters_selection->passes(event)) return false;
+  fill_histograms(event, "metfilters");
 
   if(jetlepcleaner){    APPLY_PROCESS(JLC,process) }
   if(topjetlepcleaner){ APPLY_PROCESS(TopJLC,process) }
+  fill_histograms(event, "jetlep");
   if(jec){              APPLY_PROCESS(jet_corrector,process) }
   if(topjec){           APPLY_PROCESS(topjet_corrector,process) }
+  fill_histograms(event, "JEC");
   if(jersmear && is_mc) jet_resolution_smearer->process(event);
   if(topjersmear && is_mc) topjet_resolution_smearer->process(event);
+  fill_histograms(event, "JER");
   if(do_metcorrection){ APPLY_PROCESS(jet_corrector,correct_met) }
+  fill_histograms(event, "MET");
   if(jetid) jet_cleaner->process(event);
+  if(topjetid) topjet_cleaner_noboost->process(event);
+  fill_histograms(event, "jetIDnoboost");
   if(topjetid) topjet_cleaner->process(event);
+  fill_histograms(event, "jetID");
 
   fill_histograms(event, "cleaned");
 
@@ -290,6 +370,12 @@ bool GenericCleaningModule::process(uhh2::Event& event) {
 
   if(! NBoostedJetSel->passes(event)) return false;
   fill_histograms(event, "NBoostedJet");
+
+  if(! NLeptonSel->passes(event)) return false;
+  fill_histograms(event, "NLeptonSel");
+
+  if(! JetDiLeptonPhiAngularSel->passes(event)) return false;
+  fill_histograms(event, "JetDiLeptonPhiAngular");
 
   event.set(h_weights_GLP, event.weight);
 

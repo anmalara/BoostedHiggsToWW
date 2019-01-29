@@ -35,9 +35,10 @@
 <!ENTITY electronchannel            "true">  <!--true/false -->
 
 <!-- Systematic uncertainties -->
-<!ENTITY JEC_Version                "Fall17_17Nov2017_V6">
+<!ENTITY JEC_Version                "Fall17_17Nov2017_V32">
 <!ENTITY jecsmear_direction         "nominal">  <!--nominal/down/up -->
 <!ENTITY jersmear_direction         "nominal">  <!--nominal/down/up -->
+<!ENTITY ISPUPPI                    "true">
 
 
 <!-- MC Samples -->
@@ -100,7 +101,7 @@
       <Item Name="MuonCollection"             Value="slimmedMuonsUSER" />
       <Item Name="TauCollection"              Value="slimmedTaus" />
       <Item Name="JetCollection"              Value="slimmedJets" /> <!-- slimmedJetsAK8_SoftDrop, slimmedJets -->
-      <Item Name="TopJetCollection"           Value="packedPatJetsAk8CHSJets_SoftDropCHS" />  <!-- slimmedJetsAK8_SoftDrop -->
+      <Item Name="TopJetCollection"           Value="updatedPatJetsSlimmedJetsAK8_SoftDropPuppi" />  <!-- slimmedJetsAK8_SoftDrop --> <!-- packedPatJetsAk8CHSJets_SoftDropCHS -->
       <Item Name="METName"                    Value="slimmedMETs" />
       <Item Name="GenInfoName"                Value="genInfo" />
       <Item Name="GenParticleCollection"      Value="GenParticles" />
@@ -146,6 +147,7 @@
     <!-- Systematic uncertainties -->
     <Item Name="jersmear_direction"         Value="&jersmear_direction;"/>  <!--used only in UHH2/common/include/JetCorrections.cxx -->
     <Item Name="jecsmear_direction"         Value="&jecsmear_direction;"/>  <!--used only in UHH2/common/include/JetCorrections.cxx -->
+    <Item Name="isPuppi"                    Value="&ISPUPPI;"/>
 
     <!-- MC PuReweighting -->
     <Item Name="SysType_PU"                 Value="&SysType_PU;"/>

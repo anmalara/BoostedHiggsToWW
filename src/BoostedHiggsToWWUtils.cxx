@@ -62,7 +62,13 @@ bool GenJetLeptonOverlapRemoval::process(Event & event){
 
 //================================================================================
 
-void sort_jet_H(std::vector<Jet> & jets, GenParticle H){
+template <>
+void sort_jet_H<TopJet>(std::vector<TopJet> & jets, GenParticle H){
+  std::sort(jets.begin(), jets.end(), [H](const TopJet &jet1, const TopJet &jet2 ){return uhh2::deltaR(H, jet1) < uhh2::deltaR(H, jet2);});
+}
+
+template <>
+void sort_jet_H<Jet>(std::vector<Jet> & jets, GenParticle H){
   std::sort(jets.begin(), jets.end(), [H](const Jet &jet1, const Jet &jet2 ){return uhh2::deltaR(H, jet1) < uhh2::deltaR(H, jet2);});
 }
 

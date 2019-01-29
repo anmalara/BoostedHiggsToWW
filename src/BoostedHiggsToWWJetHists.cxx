@@ -2,7 +2,7 @@
 
 #include "UHH2/common/include/Utils.h"
 
-#include "UHH2/BoostedHiggsToWW/include/BoostedHiggsToWWHists.h"
+#include "UHH2/BoostedHiggsToWW/include/BoostedHiggsToWWJetHists.h"
 #include "UHH2/BoostedHiggsToWW/include/HistsBase.hpp"
 
 #include "TH1F.h"
@@ -22,7 +22,7 @@ using namespace uhh2;
 */
 
 
-BoostedHiggsToWWHists::BoostedHiggsToWWHists(Context & ctx, const std::string & dname, const string & collection_, const unsigned int NumberOfPlottedJets_): HistsBase(ctx, dname), collection(collection_), NumberOfPlottedJets(NumberOfPlottedJets_){
+BoostedHiggsToWWJetHists::BoostedHiggsToWWJetHists(Context & ctx, const std::string & dname, const string & collection_, const unsigned int NumberOfPlottedJets_): HistsBase(ctx, dname), collection(collection_), NumberOfPlottedJets(NumberOfPlottedJets_){
   if (collection.find("top") != std::string::npos || collection.find("Top") != std::string::npos) isTop = true;
   if (collection.find("gen") != std::string::npos || collection.find("Gen") != std::string::npos) isGen = true;
   book_TH1F("number","number of jets",21, -.5, 20.5);
@@ -38,7 +38,7 @@ BoostedHiggsToWWHists::BoostedHiggsToWWHists(Context & ctx, const std::string & 
   book_TH1F("deltaRmin_2", "#Delta R_{min}(2nd jet,nearest jet)", 40, 0, 8.0);
 }
 
-void BoostedHiggsToWWHists::fill(const Event & event){
+void BoostedHiggsToWWJetHists::fill(const Event & event){
   if (!isGen && !isTop) fill_internal(event, *event.jets);
   if (!isGen &&  isTop) fill_internal(event, *event.topjets);
   // if ( isGen && !isTop) fill_internal(*event.genjets, weight, isTop, isGen);
@@ -57,7 +57,7 @@ void BoostedHiggsToWWHists::fill(const Event & event){
 
 
 template <typename T>
-void BoostedHiggsToWWHists::fill_internal(const Event & event, vector<T> jets){
+void BoostedHiggsToWWJetHists::fill_internal(const Event & event, vector<T> jets){
   auto weight = event.weight;
   fill_H1("number", jets.size(), weight);
   fill_H1("weights", weight, 1);
@@ -75,7 +75,7 @@ void BoostedHiggsToWWHists::fill_internal(const Event & event, vector<T> jets){
   }
 }
 
-void BoostedHiggsToWWHists::book_jetHist(const string & histSuffix, const string & axisSuffix, double minPt, double maxPt, bool isTop, bool isGen){
+void BoostedHiggsToWWJetHists::book_jetHist(const string & histSuffix, const string & axisSuffix, double minPt, double maxPt, bool isTop, bool isGen){
   book_TH1F("mass"+histSuffix,"M "+axisSuffix+" [GeV/c^{2}]",100,0,300);
   book_TH1F("mT"+histSuffix,"m_{T} "+axisSuffix+" [GeV/c^{2}]",100,0,300);
   book_TH1F("pt"+histSuffix,"p_{T} "+axisSuffix+" [GeV]",50,minPt,maxPt);
@@ -98,7 +98,7 @@ void BoostedHiggsToWWHists::book_jetHist(const string & histSuffix, const string
 }
 
 template <>
-void BoostedHiggsToWWHists::fill_jetHist<Jet>(const Event & event, const string& histSuffix, const Jet& jet){
+void BoostedHiggsToWWJetHists::fill_jetHist<Jet>(const Event & event, const string& histSuffix, const Jet& jet){
   auto weight = event.weight;
   fill_H1("mass"+histSuffix, jet.v4().M(), weight);
   fill_H1("mT"+histSuffix, jet.v4().Mt(), weight);
@@ -113,7 +113,7 @@ void BoostedHiggsToWWHists::fill_jetHist<Jet>(const Event & event, const string&
 }
 
 template <>
-void BoostedHiggsToWWHists::fill_jetHist<TopJet>(const Event & event, const string& histSuffix, const TopJet& jet){
+void BoostedHiggsToWWJetHists::fill_jetHist<TopJet>(const Event & event, const string& histSuffix, const TopJet& jet){
   auto weight = event.weight;
   fill_jetHist<Jet>(event, histSuffix,jet);
   fill_H1("SDmass"+histSuffix, jet.softdropmass(), weight);

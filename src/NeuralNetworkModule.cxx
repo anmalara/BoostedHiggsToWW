@@ -29,7 +29,7 @@
 
 #include "UHH2/BoostedHiggsToWW/include/ModuleBase.h"
 #include "UHH2/BoostedHiggsToWW/include/BoostedHiggsToWWSelections.h"
-#include "UHH2/BoostedHiggsToWW/include/BoostedHiggsToWWHists.h"
+#include "UHH2/BoostedHiggsToWW/include/BoostedHiggsToWWJetHists.h"
 #include "UHH2/BoostedHiggsToWW/include/DiLeptonHists.h"
 #include "UHH2/BoostedHiggsToWW/include/BoostedHiggsToWWUtils.h"
 #include "UHH2/BoostedHiggsToWW/include/constants.hpp"
@@ -73,8 +73,8 @@ protected:
 void NeuralNetworkModule::book_histograms(uhh2::Context& ctx, vector<string> tags){
   for(const auto & tag : tags){
     string mytag;
-    mytag = "nTopJet_" + tag;   book_HFolder(mytag, new BoostedHiggsToWWHists(ctx,mytag,"topjets"));
-    mytag = "nJet_" + tag;      book_HFolder(mytag, new BoostedHiggsToWWHists(ctx,mytag,"jets"));
+    mytag = "nTopJet_" + tag;   book_HFolder(mytag, new BoostedHiggsToWWJetHists(ctx,mytag,"topjets"));
+    mytag = "nJet_" + tag;      book_HFolder(mytag, new BoostedHiggsToWWJetHists(ctx,mytag,"jets"));
     mytag = "ele_" + tag;       book_HFolder(mytag, new ElectronHists(ctx,mytag));
     mytag = "muon_" + tag;      book_HFolder(mytag, new MuonHists(ctx,mytag));
     mytag = "event_" + tag;     book_HFolder(mytag, new EventHists(ctx,mytag));

@@ -29,7 +29,9 @@
 
 #include <UHH2/BoostedHiggsToWW/include/ModuleBase.h>
 #include "UHH2/BoostedHiggsToWW/include/BoostedHiggsToWWSelections.h"
-#include "UHH2/BoostedHiggsToWW/include/BoostedHiggsToWWHists.h"
+#include "UHH2/BoostedHiggsToWW/include/BoostedHiggsToWWJetHists.h"
+#include "UHH2/BoostedHiggsToWW/include/JetHistosWithConditions.h"
+#include "UHH2/BoostedHiggsToWW/include/GenMatchHists.h"
 #include "UHH2/BoostedHiggsToWW/include/DiLeptonHists.h"
 #include "UHH2/BoostedHiggsToWW/include/BoostedHiggsToWWUtils.h"
 #include "UHH2/BoostedHiggsToWW/include/constants.hpp"
@@ -58,7 +60,7 @@ public:
 protected:
 
   // Define variables
-  bool is_mc, lumisel, mclumiweight, mcpileupreweight, jec, topjec, jersmear, topjersmear, eleid, muid, tauid, jetpfidcleaner, topjetpfidcleaner, metfilters, jetlepcleaner, topjetlepcleaner, jetid, topjetid, do_metcorrection;
+  bool is_mc, lumisel, mclumiweight, mcpileupreweight, isPuppi, jec, topjec, jersmear, topjersmear, eleid, muid, tauid, jetpfidcleaner, topjetpfidcleaner, metfilters, jetlepcleaner, topjetlepcleaner, jetid, topjetid, do_metcorrection;
   bool muonchannel, electronchannel;
   string SysType_PU, JEC_Version, JEC_LABEL;
 
@@ -89,7 +91,7 @@ protected:
   std::unique_ptr<JetResolutionSmearer> jet_resolution_smearer;
   std::unique_ptr<GenericJetResolutionSmearer> topjet_resolution_smearer;
   std::unique_ptr<JetCleaner> jet_cleaner;
-  std::unique_ptr<TopJetCleaner> topjet_cleaner;
+  std::unique_ptr<TopJetCleaner> topjet_cleaner, topjet_cleaner_noboost;
 
   // Define selections
 
@@ -106,8 +108,8 @@ protected:
 void FeasibilityStudyModule::book_histograms(uhh2::Context& ctx, vector<string> tags){
   for(const auto & tag : tags){
     string mytag;
-    mytag = "nTopJet_" + tag;  book_HFolder(mytag, new BoostedHiggsToWWHists(ctx,mytag,"topjets"));
-    mytag = "nJet_" + tag;     book_HFolder(mytag, new BoostedHiggsToWWHists(ctx,mytag,"jets"));
+    mytag = "nTopJet_" + tag;  book_HFolder(mytag, new BoostedHiggsToWWJetHists(ctx,mytag,"topjets"));
+    mytag = "nJet_" + tag;     book_HFolder(mytag, new BoostedHiggsToWWJetHists(ctx,mytag,"jets"));
     mytag = "ele_" + tag;      book_HFolder(mytag, new ElectronHists(ctx,mytag));
     mytag = "muon_" + tag;     book_HFolder(mytag, new MuonHists(ctx,mytag));
     mytag = "event_" + tag;     book_HFolder(mytag, new EventHists(ctx,mytag));
@@ -148,6 +150,7 @@ FeasibilityStudyModule::FeasibilityStudyModule(uhh2::Context& ctx){
   mclumiweight = string2bool(ctx.get("mclumiweight", "true"));
   mcpileupreweight = string2bool(ctx.get("mcpileupreweight", "true"));
   SysType_PU = ctx.get("SysType_PU");
+  isPuppi = string2bool(ctx.get("isPuppi", "true"));
   jec = string2bool(ctx.get("jec", "true"));
   topjec = string2bool(ctx.get("topjec", "true"));
   jersmear = string2bool(ctx.get("jersmear", "true"));
@@ -178,8 +181,8 @@ FeasibilityStudyModule::FeasibilityStudyModule(uhh2::Context& ctx){
 
   MAKE_JEC(Fall17_17Nov2017_V6, AK4PFchs)
   MAKE_JEC(Fall17_17Nov2017_V6, AK8PFchs)
-  // MAKE_JEC(Fall17_17Nov2017_V6, AK4PFPuppi)
-  // MAKE_JEC(Fall17_17Nov2017_V6, AK8PFPuppi)
+  MAKE_JEC(Fall17_17Nov2017_V6, AK4PFPuppi)
+  MAKE_JEC(Fall17_17Nov2017_V6, AK8PFPuppi)
 
 
   PrimaryVertexId pvid = StandardPrimaryVertexId(); // TODO

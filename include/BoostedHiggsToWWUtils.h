@@ -32,7 +32,9 @@ private:
 
 //================================================================================
 
-void sort_jet_H(std::vector<Jet> & jets, GenParticle H);
+template<typename T>
+void sort_jet_H(std::vector<T> & jets, GenParticle H);
 void sort_genjet_H(std::vector<Particle> & jets, GenParticle H);
-template<typename T> void sort_myjet(std::vector<T> & jets, auto diLep);
+template<typename T>
+void sort_myjet(std::vector<T> & jets, auto diLep);
 void sort_jet_by_dilepdist(uhh2::Event & event);

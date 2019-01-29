@@ -1,4 +1,4 @@
-#include <iostream>
+  #include <iostream>
 #include <memory>
 
 #include "UHH2/core/include/AnalysisModule.h"
@@ -29,7 +29,7 @@
 
 #include "UHH2/BoostedHiggsToWW/include/ModuleBase.h"
 #include "UHH2/BoostedHiggsToWW/include/BoostedHiggsToWWSelections.h"
-#include "UHH2/BoostedHiggsToWW/include/BoostedHiggsToWWHists.h"
+#include "UHH2/BoostedHiggsToWW/include/BoostedHiggsToWWJetHists.h"
 #include "UHH2/BoostedHiggsToWW/include/DiLeptonHists.h"
 #include "UHH2/BoostedHiggsToWW/include/BoostedHiggsToWWUtils.h"
 #include "UHH2/BoostedHiggsToWW/include/constants.hpp"
@@ -60,7 +60,8 @@ protected:
   bool is_mc;
   bool muonchannel, electronchannel;
   Event::Handle< float > h_weights_GLP;
-  Event::Handle< float > h_isHiggs, h_isQCD, h_isTop;
+
+  std::shared_ptr<Selection> TopJetHiggsMatch;
 
 };
 
@@ -68,8 +69,8 @@ protected:
 void GenLevelMatchModule::book_histograms(uhh2::Context& ctx, vector<string> tags){
   for(const auto & tag : tags){
     string mytag;
-    mytag = "nTopJet_" + tag;   book_HFolder(mytag, new BoostedHiggsToWWHists(ctx,mytag,"topjets"));
-    mytag = "nJet_" + tag;      book_HFolder(mytag, new BoostedHiggsToWWHists(ctx,mytag,"jets"));
+    mytag = "nTopJet_" + tag;   book_HFolder(mytag, new BoostedHiggsToWWJetHists(ctx,mytag,"topjets"));
+    mytag = "nJet_" + tag;      book_HFolder(mytag, new BoostedHiggsToWWJetHists(ctx,mytag,"jets"));
     mytag = "ele_" + tag;       book_HFolder(mytag, new ElectronHists(ctx,mytag));
     mytag = "muon_" + tag;      book_HFolder(mytag, new MuonHists(ctx,mytag));
     mytag = "event_" + tag;     book_HFolder(mytag, new EventHists(ctx,mytag));
@@ -110,17 +111,9 @@ GenLevelMatchModule::GenLevelMatchModule(uhh2::Context& ctx){
 
   if (muonchannel == electronchannel) throw std::runtime_error("In GenLevelMatchModule.cxx: Choose exactly one lepton channel.");
 
-  // if (muonchannel) JetDiLeptonPhiAngularSel.reset(new JetDiMuonPhiAngularSelection(min_delta_phi));
-  // if (electronchannel) JetDiLeptonPhiAngularSel.reset(new JetDiElectronPhiAngularSelection(min_delta_phi));
-
-  // unsorted_jets = ctx.declare_event_output< std::vector< TopJet > >("unsorted_jets");
+  TopJetHiggsMatch.reset(new TopJetHiggsMatching());
 
   h_weights_GLP = ctx.declare_event_input< float >("weights_GLP");
-
-  h_isHiggs = ctx.declare_event_output< float >("isHiggs");
-  h_isQCD = ctx.declare_event_output< float >("isQCD");
-  h_isTop = ctx.declare_event_output< float >("isTop");
-
 
 }
 
@@ -138,11 +131,14 @@ bool GenLevelMatchModule::process(uhh2::Event& event) {
   event.weight = event.get(h_weights_GLP);
 
   fill_histograms(event, "init");
-  fill_histograms(event, "after");
 
-  event.set(h_isHiggs, 0.);
-  event.set(h_isQCD, 0.);
-  event.set(h_isTop, 0.);
+  if(TopJetHiggsMatch->passes(event)) fill_histograms(event, "after");
+
+  for (auto& jet: *event.topjets) {
+    // jet.set_tag(NN_IsHiggs, 0.);
+    // jet.set_tag(NN_IsQCD, 0.);
+    // jet.set_tag(NN_IsTop, 0.);
+  }
 
 
   return true;

@@ -18,8 +18,10 @@ Modules = ModuleRunner()
 # Modules.SetModule("GenericCleaning")
 # Modules.DeleteWorkdirs()
 # Modules.CreateConfigFiles()
+# Modules.RunLocal("Local")
+# Modules.CondorControl()
 # Modules.CondorControl("Submit")
-# Modules.CondorControl("Merge")
+# Modules.CondorControl("ForceMerge")
 # Modules.CondorControl("List")
 
 # Modules.CondorControl("ForceMerge")
@@ -31,7 +33,7 @@ Modules = ModuleRunner()
 #                                               #
 #################################################
 
-Modules.SetModule("GenLevelMatch")
+# Modules.SetModule("GenLevelMatch")
 # Modules.DeleteWorkdirs()
 # Modules.CreateConfigFiles()
 # Modules.CondorControl()

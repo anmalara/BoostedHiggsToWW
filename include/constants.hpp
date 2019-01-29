@@ -24,5 +24,9 @@ const float min_delta_phi = 2.7;
 
 #define  JETVARIABLE topjets
 
+enum taggers {NN_IsHiggs=1000, NN_IsQCD, NN_IsTop};
+
+enum Conditions { ZMatch, HMatch, WWfullLep, WWfullHad, WWsemiLep };
+enum Decay {nodecay, leptonic, semileptonic, hadronic };
 
 #endif

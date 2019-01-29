@@ -12,9 +12,9 @@
 #include <string>
 
 
-class BoostedHiggsToWWHists: public HistsBase {
+class BoostedHiggsToWWJetHists: public HistsBase {
 public:
-  BoostedHiggsToWWHists(uhh2::Context&, const std::string&, const std::string& ,const unsigned int NumberOfPlottedJets=4);
+  BoostedHiggsToWWJetHists(uhh2::Context&, const std::string&, const std::string& ,const unsigned int NumberOfPlottedJets=4);
   virtual void fill(const uhh2::Event&) override;
 protected:
   std::string collection;

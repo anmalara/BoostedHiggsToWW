@@ -19,10 +19,10 @@ namespace uhh2 {
 
   #define DEFINENLeptonPtEtaIsoSelection(Lepton)\
   class N##Lepton##PtEtaIsoSelection: public Selection {\
-  public:\
+    public:\
     N##Lepton##PtEtaIsoSelection(int n_lepton = 2, float pt_lepton = 5, float eta_lepton = 4., float min_isolation = 0.2);\
     virtual bool passes(const Event & event) override;\
-  private:\
+    private:\
     float n_lepton, pt_lepton, eta_lepton, min_isolation;\
   };\
 
@@ -34,15 +34,26 @@ namespace uhh2 {
 
   #define DEFINEJetDiLeptonPhiAngularSelection(Lepton)\
   class JetDi##Lepton##PhiAngularSelection: public Selection {\
-  public:\
+    public:\
     JetDi##Lepton##PhiAngularSelection(float phi_min = 0, float phi_max = M_PI);\
     virtual bool passes(const Event & event) override;\
-  private:\
+    private:\
     float phi_min, phi_max;\
   };\
 
   DEFINEJetDiLeptonPhiAngularSelection(Muon)
   DEFINEJetDiLeptonPhiAngularSelection(Electron)
+
+  ////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////
+
+  class TopJetHiggsMatching: public Selection {
+  public:
+    TopJetHiggsMatching(float deltaR_min = 0.8 );
+    virtual bool passes(const Event & event) override;
+  private:
+    float deltaR_min;
+  };
 
   ////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////
